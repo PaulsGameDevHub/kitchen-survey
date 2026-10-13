@@ -142,22 +142,6 @@ const CONFIG = {
           ]
         },
         {
-          "id": "doors",
-          "title": "Doors",
-          "repeat": "Door",
-          "photos": true,
-          "questions": [
-            { "id": "doorW", "label": "Width over architrave", "type": "number", "unit": "mm" },
-            { "id": "doorH", "label": "Height", "type": "number", "unit": "mm" },
-            { "id": "doorCorner", "label": "Architrave to corner", "type": "number", "unit": "mm" },
-            { "id": "doorSwing", "label": "Door opens", "type": "choice",
-              "options": ["Into kitchen", "Out of kitchen", "Open doorway"] },
-            { "id": "doorHinge", "label": "Hinge side (from inside the kitchen)", "type": "choice",
-              "options": ["Left", "Right"],
-              "when": { "q": "doorSwing", "in": ["Into kitchen", "Out of kitchen"] } }
-          ]
-        },
-        {
           "id": "plumbing",
           "title": "Water & waste",
           "photos": true,
@@ -236,15 +220,33 @@ const CONFIG = {
           ]
         },
         {
-          "id": "access",
-          "title": "Access & storage",
+          "id": "route",
+          "title": "Delivery route & doors",
           "photos": true,
           "questions": [
             { "id": "kitchenFloor", "label": "Kitchen is on the", "type": "choice",
               "options": ["Ground floor", "Upper floor"] },
-            { "id": "route", "label": "Route in for units and worktops", "type": "checks",
-              "options": ["Clear", "Narrow hallway", "Tight stairs / turns", "Steps outside", "Through house only"],
-              "flag": ["Tight stairs / turns"] },
+            { "id": "frontDoorW", "label": "Front door opening", "type": "number", "unit": "mm" },
+            { "id": "kitchenDoorW", "label": "Kitchen door opening", "type": "number", "unit": "mm" },
+            { "id": "narrowestW", "label": "Narrowest opening on the way", "type": "number", "unit": "mm" },
+            { "id": "hallW", "label": "Hallway width", "type": "number", "unit": "mm" },
+            { "id": "stairW", "label": "Stair width", "type": "number", "unit": "mm",
+              "when": { "q": "kitchenFloor", "in": ["Upper floor"] } },
+            { "id": "stairTurn", "label": "Turn or landing on the stairs?", "type": "yesno",
+              "flag": ["Yes"], "flagNote": "tall units and long worktops may not get round",
+              "when": { "q": "kitchenFloor", "in": ["Upper floor"] } },
+            { "id": "routeIssues", "label": "Anything in the way?", "type": "checks",
+              "options": ["Tight turn in hallway", "Steps outside", "Radiator in hallway", "Low ceiling / beam", "Through another room"] },
+            { "id": "longItems", "label": "Will a full-length worktop and tall unit get in?", "type": "choice",
+              "options": ["Yes", "Tight", "No"], "flag": ["Tight", "No"],
+              "flagLabel": "Long items getting in", "flagNote": "check worktop and tall unit sizes against the route" }
+          ]
+        },
+        {
+          "id": "access",
+          "title": "Parking & storage",
+          "photos": true,
+          "questions": [
             { "id": "parking", "label": "Parking", "type": "choice",
               "options": ["Drive", "Street", "Permit needed"], "flag": ["Permit needed"] },
             { "id": "storage", "label": "Where is the new kitchen stored on delivery?", "type": "choice",
