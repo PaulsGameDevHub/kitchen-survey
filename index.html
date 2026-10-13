@@ -520,7 +520,7 @@ const CONFIG = {
 
   /* questions */
   .q{padding:14px 2px;border-bottom:1px solid var(--line);}
-  .q.hide{display:none;}
+  .q.hide{display:none !important;}
   .q.sub{border-left:3px solid var(--accent-wash);padding-left:12px;}
   .q.flagged{background:var(--warn-wash);border-radius:var(--radius);border-bottom-color:transparent;padding-left:10px;padding-right:10px;}
   /* a detail box (e.g. measured depth) shares its flagged parent's red */
@@ -1058,7 +1058,10 @@ const CONFIG = {
           }
         });
       }
-      card.querySelectorAll('.num-grid').forEach(g => g.classList.toggle('flagged-row', !!g.querySelector('.flag-joined')));
+      card.querySelectorAll('.num-grid').forEach(g => {
+        g.classList.toggle('flagged-row', !!g.querySelector('.flag-joined'));
+        g.style.display = g.querySelector('.q:not(.hide)') ? '' : 'none';
+      });
       if (sv){ partTot[s.part].t += st; partTot[s.part].d += sd; }
       const cnt = $('cnt-' + s.id);
       cnt.innerHTML = (sf ? '<span class="fl">⚑ '+sf+'</span>' : '') + (st && sd === st ? '✓ ' : '') + sd + ' / ' + st;
