@@ -303,23 +303,6 @@ const CONFIG = {
           ]
         },
         {
-          "id": "layout",
-          "title": "Layout",
-          "photos": true,
-          "questions": [
-            { "id": "shape", "label": "Layout", "type": "choice",
-              "options": ["Single wall", "Galley", "L-shape", "U-shape", "Island", "Peninsula"] },
-            { "id": "newWallUnits", "label": "Wall units?", "type": "yesno" },
-            { "id": "newWallUnitH", "label": "Wall unit height", "type": "choice",
-              "options": ["720mm", "900mm", "Mixed"],
-              "when": { "q": "newWallUnits", "in": ["Yes"] } },
-            { "id": "tallUnits", "label": "Tall units?", "type": "yesno" },
-            { "id": "corner", "label": "Corner solution", "type": "choice",
-              "options": ["Blind corner", "Magic corner", "Corner drawers", "None"] },
-            { "id": "newPlinth", "label": "Plinth height", "type": "number", "unit": "mm" }
-          ]
-        },
-        {
           "id": "worktops",
           "title": "Worktops",
           "photos": true,
