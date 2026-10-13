@@ -344,7 +344,7 @@ const CONFIG = {
               "when": { "q": "hobType", "in": ["Range cooker"] } },
             { "id": "gasInPos", "label": "Is the gas supply in the right place for the new cooker?", "type": "choice",
               "options": ["In position", "Needs moving"],
-              "flag": ["Needs moving"], "flagLabel": "Gas supply", "flagNote": "needs moving, Gas Safe engineer needed",
+              "flag": ["Needs moving"], "flagLabel": "Gas supply", "flagNote": "Gas Safe engineer needed",
               "when": [ { "q": "gasPresent", "in": ["Yes"] }, { "any": [ { "q": "hobType", "in": ["Gas"] }, { "q": "rangeFuel", "in": ["Gas", "Dual fuel"] } ] } ] },
             { "id": "gasCap", "label": "Gas to be capped off?", "type": "yesno",
               "hint": "Gas Safe engineer needed", "flag": ["Yes"],
