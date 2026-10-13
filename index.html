@@ -35,6 +35,7 @@
                     different option there clears the box again.
        "optional"   not counted towards progress
        "flagLabel"  wording to use on the follow-up list instead of the label
+       "flagWhen"   only flag when another answer matches, same shape as "when"
        "flagDetail" show another answer in place of a flagged option, e.g.
                     "flagDetail": { "Other": "wtDepthOther" } lists "Other" as
                     the measured depth, and that box goes red along with it
@@ -119,6 +120,8 @@ const CONFIG = {
               "when": { "q": "floorFinish", "in": ["Tiles", "Vinyl / LVT", "Laminate / wood"] } },
             { "id": "floorLift", "label": "Who is lifting the old floor?", "type": "choice",
               "options": ["Us", "Customer", "Other trade"],
+              "flag": ["Us"], "flagWhen": { "q": "floorFinish", "in": ["Tiles"] },
+              "flagLabel": "We're lifting tiles", "flagNote": "may need screed repairs underneath",
               "when": { "q": "keepFloor", "in": ["No"] } },
             { "id": "floorRun", "label": "Does the current floor run to the walls, or only up to the old kitchen?", "type": "choice",
               "options": ["To the walls", "To the old units", "Unsure"],
@@ -919,6 +922,7 @@ const CONFIG = {
     if (!isSet(v)) return [];
     if (q.flagAbove != null) return +v > q.flagAbove ? [fmtAnswer(q, v)] : [];
     if (!q.flag) return [];
+    if (q.flagWhen && !condMet(q.flagWhen, SEC[q.section], i)) return [];
     return (Array.isArray(v) ? v : [v]).filter(x => q.flag.includes(x)).map(x => {
       const d = q.flagDetail && Q[q.flagDetail[x]];
       const dv = d && state.answers[key(d, i)];
