@@ -899,7 +899,10 @@ const CONFIG = {
         const picked = (q.options || []).filter(o => !(q.askWhoSkip || []).includes(o));
         out.push(
           { id:q.id + '-who', label:'Who is doing the ' + q.askWho + '?', type:'choice',
-            options:['Us', 'Customer', 'Split'], when:{ q:q.id, in:picked } },
+            options:['Us', 'Customer', 'Split'], when:{ q:q.id, in:picked },
+            flag:['Customer', 'Split'], flagLabel:q.askWho.charAt(0).toUpperCase() + q.askWho.slice(1) + ' by',
+            flagNote:'agree timing with the customer so it is done when we need it',
+            flagDetail:{ Split:q.id + '-whoSplit' } },
           { id:q.id + '-whoSplit', label:'What is the customer doing?', type:'text',
             when:{ q:q.id + '-who', in:['Split'] } });
       }
