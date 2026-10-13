@@ -34,6 +34,9 @@
                     different option there clears the box again.
        "optional"   not counted towards progress
        "flagLabel"  wording to use on the follow-up list instead of the label
+       "flagDetail" show another answer in place of a flagged option, e.g.
+                    "flagDetail": { "Other": "wtDepthOther" } lists "Other" as
+                    the measured depth, and that box goes red along with it
 
      Optional on a section:
        "when"    hide the whole section until an answer matches
@@ -77,11 +80,10 @@ const CONFIG = {
             { "id": "wtDepth", "label": "Worktop depth", "type": "choice",
               "options": ["600mm", "650mm", "Other"],
               "hint": "Deeper than 600mm can mean pipes hidden behind the units",
-              "flag": ["650mm"], "flagNote": "deeper than standard, check for hidden pipes" },
-            { "id": "wtDepthOther", "label": "Or measured depth", "type": "number", "unit": "mm",
-              "flagAbove": 600, "flagNote": "deeper than standard, check for hidden pipes",
-              "selects": { "q": "wtDepth", "value": "Other" }, "optional": true,
-              "flagLabel": "Worktop depth" },
+              "flag": ["650mm", "Other"], "flagNote": "not standard, check for hidden pipes",
+              "flagDetail": { "Other": "wtDepthOther" } },
+            { "id": "wtDepthOther", "label": "Measured depth", "type": "number", "unit": "mm",
+              "when": { "q": "wtDepth", "in": ["Other"] } },
             { "id": "wtMat", "label": "Worktop material", "type": "choice",
               "options": ["Laminate / wood", "Quartz / granite", "Other"],
               "hint": "Quartz and granite are heavy to lift out, so the installer may need a hand",
@@ -521,6 +523,10 @@ const CONFIG = {
   .q.hide{display:none;}
   .q.sub{border-left:3px solid var(--accent-wash);padding-left:12px;}
   .q.flagged{background:var(--warn-wash);border-radius:var(--radius);border-bottom-color:transparent;padding-left:10px;padding-right:10px;}
+  /* a detail box (e.g. measured depth) shares its flagged parent's red */
+  .q.flagged:has(+ .num-grid.flagged-row),.q.flagged:has(+ .q.flag-joined){border-radius:var(--radius) var(--radius) 0 0;}
+  .num-grid.flagged-row,.q.flag-joined:not(.num-grid .q){background:var(--warn-wash);border-radius:0 0 var(--radius) var(--radius);border-bottom-color:transparent;margin-top:-1px;padding-left:10px;padding-right:10px;}
+  .num-grid.flagged-row .q{padding-top:0;}
   .q-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:9px;}
   .q-label{font-weight:500;}
   .q-hint{font-size:12px;color:var(--ink-soft);font-style:italic;margin-top:1px;}
@@ -878,7 +884,11 @@ const CONFIG = {
     if (!isSet(v)) return [];
     if (q.flagAbove != null) return +v > q.flagAbove ? [fmtAnswer(q, v)] : [];
     if (!q.flag) return [];
-    return (Array.isArray(v) ? v : [v]).filter(x => q.flag.includes(x));
+    return (Array.isArray(v) ? v : [v]).filter(x => q.flag.includes(x)).map(x => {
+      const d = q.flagDetail && Q[q.flagDetail[x]];
+      const dv = d && state.answers[key(d, i)];
+      return isSet(dv) ? x + ' (' + fmtAnswer(d, dv) + ')' : x;
+    });
   }
 
   function fmtAnswer(q, v){
@@ -1021,7 +1031,10 @@ const CONFIG = {
           el.classList.toggle('hide', !vis);
           const v = state.answers[k];
           const fv = vis ? flaggedVals(q, i) : [];
+          const par = q.when && Q[q.when.q];
+          const parFlag = par && par.flagDetail && Object.values(par.flagDetail).includes(q.id) && flaggedVals(par, i).length > 0;
           el.classList.toggle('flagged', fv.length > 0);
+          el.classList.toggle('flag-joined', !!(vis && parFlag));
           if (fv.length){ sf++; flags.push({ q, i, s, vals:fv }); }
           if (vis && counts(q)){ st++; if (isSet(v)) sd++; }
 
@@ -1045,6 +1058,7 @@ const CONFIG = {
           }
         });
       }
+      card.querySelectorAll('.num-grid').forEach(g => g.classList.toggle('flagged-row', !!g.querySelector('.flag-joined')));
       if (sv){ partTot[s.part].t += st; partTot[s.part].d += sd; }
       const cnt = $('cnt-' + s.id);
       cnt.innerHTML = (sf ? '<span class="fl">⚑ '+sf+'</span>' : '') + (st && sd === st ? '✓ ' : '') + sd + ' / ' + st;
