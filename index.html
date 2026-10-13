@@ -40,7 +40,8 @@
        "flagWhen"   only flag when another answer matches, same shape as "when"
        "details"    each picked option gets make, model and power-needed boxes.
                     Use "detailsSkip": ["None"] to leave some out, "detailNames"
-                    to name them ({ "Gas": "Gas hob" }) or "detailPrefix": "Old ".
+                    to name them ({ "Gas": "Gas hob" }) or "detailPrefix": "Customer's ".
+                    "detailsAskNew": true also asks whether each one is new or existing.
                     Power choices come from "powerOptions" at the top.
        "flagDetail" show another answer in place of a flagged option, e.g.
                     "flagDetail": { "Other": "wtDepthOther" } lists "Other" as
@@ -376,9 +377,9 @@ const CONFIG = {
               "details": true },
             { "id": "appFeeds", "label": "Water needed for", "type": "checks",
               "options": ["Dishwasher", "Washing machine", "Fridge water", "Boiling tap", "Water softener"] },
-            { "id": "reusing", "label": "Old appliances being reused", "type": "checks",
-              "options": ["Oven", "Hob", "Hood", "Fridge freezer", "Dishwasher", "Washing machine"],
-              "details": true, "detailPrefix": "Old " }
+            { "id": "reusing", "label": "Customer supplied appliances", "type": "checks",
+              "options": ["Oven", "Hob", "Hood", "Fridge freezer", "Dishwasher", "Washing machine", "Microwave"],
+              "details": true, "detailPrefix": "Customer's ", "detailsAskNew": true }
           ]
         },
         {
@@ -892,6 +893,8 @@ const CONFIG = {
         if (q.detailPrefix) name = q.detailPrefix + name.charAt(0).toLowerCase() + name.slice(1);
         const base = q.id + '-' + o.replace(/[^a-z0-9]/gi, '').toLowerCase();
         const when = { q:q.id, in:[o] };
+        if (q.detailsAskNew) out.push(
+          { id:base + '-age', label:name + ': new or existing?', type:'choice', options:['New', 'Existing'], when });
         out.push(
           { id:base + '-make',  label:name + ' make',  type:'text', half:true, optional:true, when },
           { id:base + '-model', label:name + ' model', type:'text', half:true, optional:true, when },
