@@ -121,7 +121,7 @@ const CONFIG = {
             { "id": "floorLift", "label": "Who is lifting the old floor?", "type": "choice",
               "options": ["Us", "Customer", "Other trade"],
               "flag": ["Us"], "flagWhen": { "q": "floorFinish", "in": ["Tiles"] },
-              "flagLabel": "We're lifting tiles", "flagNote": "may need screed repairs underneath",
+              "flagLabel": "Old tiled floor lifted by", "flagNote": "may need screed repairs underneath",
               "when": { "q": "keepFloor", "in": ["No"] } },
             { "id": "floorRun", "label": "Does the current floor run to the walls, or only up to the old kitchen?", "type": "choice",
               "options": ["To the walls", "To the old units", "Unsure"],
