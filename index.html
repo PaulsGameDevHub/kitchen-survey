@@ -106,6 +106,10 @@ const CONFIG = {
             { "id": "ceilingDropNote", "label": "What is it and where?", "type": "text",
               "hint": "e.g. slopes down over the back wall to about 2100mm",
               "when": { "q": "ceilingDrop", "in": ["Yes"] } },
+            { "id": "roomCeilNotes", "label": "Room & ceiling notes", "type": "note",
+              "hint": "Leave blank if nothing stands out" },
+            { "id": "wallNotes", "label": "Wall notes", "type": "note",
+              "hint": "e.g. badly out of square, damp, cracks, hollow plaster. Leave blank if nothing." },
             { "id": "floorType", "label": "Floor construction", "type": "choice",
               "options": ["Concrete", "Timber", "Both", "Unsure"] },
             { "id": "floorBoth", "label": "Which part is which?", "type": "text",
@@ -130,7 +134,7 @@ const CONFIG = {
               "flagLabel": "Current floor runs",
               "when": { "q": "keepFloor", "in": ["Yes"] } },
             { "id": "floorNotes", "label": "Floor notes", "type": "note",
-              "hint": "Anything about the floor that stands out. Leave blank if nothing." }
+              "hint": "e.g. uneven, soft spots, damp. Leave blank if nothing." }
           ]
         },
         {
@@ -267,11 +271,11 @@ const CONFIG = {
         },
         {
           "id": "roomNotes",
-          "title": "Room notes",
+          "title": "Other notes",
           "photos": true,
           "questions": [
-            { "id": "roomStandout", "label": "Anything that stands out", "type": "note",
-              "hint": "e.g. walls badly out of square, damp, cracks, uneven floor" }
+            { "id": "roomStandout", "label": "Anything else that stands out", "type": "note",
+              "hint": "Leave blank if nothing" }
           ]
         }
       ]
@@ -649,7 +653,7 @@ const CONFIG = {
     padding:8px 10px;font-family:var(--font-body);font-size:16px;background:#fff;color:var(--ink);
   }
   .q .num input{flex:1 1 auto;min-width:0;max-width:150px;font-family:var(--font-mono);}
-  .q textarea,.field textarea{resize:vertical;min-height:70px;}
+  .q textarea,.field textarea{resize:vertical;min-height:58px;}
   .q input:focus,.q textarea:focus,.field input:focus,.field textarea:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:var(--accent);}
 
   /* photos */
