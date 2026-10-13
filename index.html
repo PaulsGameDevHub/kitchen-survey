@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kitchen Survey</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Instrument+Sans:wght@400;500;600&family=Spline+Sans+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<!-- ============================================================
+     SURVEY QUESTIONS  —  edit this block to change the checklist.
+
+     Each section has a title and a list of questions. Question types:
+       "choice"  slide-tab options (4 or fewer) or chips (5+), pick one
+       "yesno"   a Yes / No slide tab
+       "checks"  chips, tick as many as apply
+       "number"  a number box, with "unit" shown after it (mm, qty…)
+       "text"    a one-line text box
+       "note"    a larger notes box (not counted towards progress)
+
+     Optional on any question:
+       "hint"  small grey help text under the question
+       "when"  only show it after another answer, e.g.
+               "when": { "q": "wasteSeen", "in": ["Yes"] }
+       "flag"  answers that go on the follow-up list, e.g. "flag": ["No"]
+     A whole section can have a "when" too, and "photos": true adds an
+     "Add photo" button to it.
+     ============================================================ -->
+<script>
+/* === SURVEY START === */
+const CONFIG = {
+  "business": "Kitchen Survey",
+  "brandline": "Site survey checklist",
+  "tagline": "Work down the list on site. Questions open up as you answer, and anything that needs a second look goes on the follow-up list.",
+  "autosave": true,
+  "sections": [
+    {
+      "id": "room",
+      "title": "The room",
+      "photos": true,
+      "questions": [
+        { "id": "status", "label": "What is in the room now?", "type": "choice",
+          "options": ["Kitchen installed", "Part stripped", "Empty room"] },
+        { "id": "stripout", "label": "Who is stripping out the old kitchen?", "type": "choice",
+          "options": ["Us", "Customer", "Other trade"],
+          "when": { "q": "status", "in": ["Kitchen installed", "Part stripped"] } },
+        { "id": "disposal", "label": "Waste removal", "type": "choice",
+          "options": ["Skip", "Van", "Customer"],
+          "when": { "q": "status", "in": ["Kitchen installed", "Part stripped"] } },
+        { "id": "roomL", "label": "Room length", "type": "number", "unit": "mm" },
+        { "id": "roomW", "label": "Room width", "type": "number", "unit": "mm" },
+        { "id": "ceilH", "label": "Ceiling height", "type": "number", "unit": "mm",
+          "hint": "Check for bulkheads or drops" },
+        { "id": "walls", "label": "Are the walls square and plumb?", "type": "choice",
+          "options": ["Good", "Slightly out", "Badly out"], "flag": ["Badly out"] },
+        { "id": "floorType", "label": "Floor construction", "type": "choice",
+          "options": ["Concrete", "Suspended timber", "Unsure"] },
+        { "id": "floorFinish", "label": "Current floor finish", "type": "choice",
+          "options": ["Tiles", "Vinyl / LVT", "Laminate / wood", "Bare"] },
+        { "id": "floorLevel", "label": "Is the floor level?", "type": "choice",
+          "options": ["Level", "Slight fall", "Needs levelling"], "flag": ["Needs levelling"] },
+        { "id": "newFloor", "label": "New floor goes down", "type": "choice",
+          "options": ["Before units", "After units", "No new floor"] },
+        { "id": "access", "label": "Access", "type": "checks",
+          "options": ["Ground floor", "Upstairs", "Tight stairs / turns", "Parking on drive", "Street parking only", "Permit needed"] }
+      ]
+    },
+    {
+      "id": "existing",
+      "title": "Existing kitchen",
+      "photos": true,
+      "when": { "q": "status", "in": ["Kitchen installed", "Part stripped"] },
+      "questions": [
+        { "id": "wtMat", "label": "Current worktop", "type": "choice",
+          "options": ["Laminate", "Solid wood", "Stone / quartz", "Other"] },
+        { "id": "wtDepth", "label": "Worktop depth", "type": "number", "unit": "mm",
+          "hint": "Standard is 600mm" },
+        { "id": "wtThick", "label": "Worktop thickness", "type": "choice",
+          "options": ["22mm", "28mm", "38mm", "40mm+"] },
+        { "id": "wtHeight", "label": "Worktop height from floor", "type": "number", "unit": "mm" },
+        { "id": "plinth", "label": "Plinth height", "type": "number", "unit": "mm" },
+        { "id": "wallUnits", "label": "Wall units fitted?", "type": "yesno" },
+        { "id": "wallUnitH", "label": "Floor to underside of wall units", "type": "number", "unit": "mm",
+          "when": { "q": "wallUnits", "in": ["Yes"] } },
+        { "id": "tiles", "label": "Tiled splashback coming off?", "type": "yesno",
+          "hint": "Expect plaster damage behind tiles" },
+        { "id": "keepApps", "label": "Appliances being reused", "type": "checks",
+          "options": ["Oven", "Hob", "Hood", "Fridge freezer", "Dishwasher", "Washing machine", "None"] }
+      ]
+    },
+    {
+      "id": "plumbing",
+      "title": "Water & waste",
+      "photos": true,
+      "questions": [
+        { "id": "sinkPos", "label": "Sink position", "type": "choice",
+          "options": ["Staying", "Moving"] },
+        { "id": "wasteSeen", "label": "Can you see the waste pipe exit?", "type": "yesno",
+          "flag": ["No"] },
+        { "id": "wasteWhere", "label": "Where does the waste exit?", "type": "choice",
+          "options": ["Through wall", "Through floor", "Into boxing"],
+          "when": { "q": "wasteSeen", "in": ["Yes"] } },
+        { "id": "wasteSize", "label": "Waste pipe size", "type": "choice",
+          "options": ["32mm", "40mm", "50mm", "Unsure"],
+          "when": { "q": "wasteSeen", "in": ["Yes"] } },
+        { "id": "wasteHeight", "label": "Height of waste exit from floor", "type": "number", "unit": "mm",
+          "when": { "q": "wasteSeen", "in": ["Yes"] } },
+        { "id": "wasteFall", "label": "Enough fall to the new sink position?", "type": "choice",
+          "options": ["Yes", "Tight", "No"], "flag": ["Tight", "No"],
+          "when": { "q": "sinkPos", "in": ["Moving"] } },
+        { "id": "pipesSeen", "label": "Can you see where the water pipes enter the room?", "type": "yesno",
+          "flag": ["No"] },
+        { "id": "pipesWhere", "label": "Where do they come in?", "type": "choice",
+          "options": ["Through floor", "Through wall", "From ceiling"],
+          "when": { "q": "pipesSeen", "in": ["Yes"] } },
+        { "id": "pipeMat", "label": "Supply pipe material", "type": "choice",
+          "options": ["Copper", "Plastic", "Lead", "Mixed"], "flag": ["Lead"] },
+        { "id": "stopcock", "label": "Stopcock found?", "type": "yesno", "flag": ["No"] },
+        { "id": "stopcockWhere", "label": "Stopcock location", "type": "text",
+          "when": { "q": "stopcock", "in": ["Yes"] } },
+        { "id": "stopcockWorks", "label": "Does the stopcock turn off?", "type": "choice",
+          "options": ["Yes", "Stiff", "Not tested"], "flag": ["Stiff"],
+          "when": { "q": "stopcock", "in": ["Yes"] } },
+        { "id": "isoValves", "label": "Isolation valves under the sink?", "type": "yesno" },
+        { "id": "appFeeds", "label": "Appliance feeds needed", "type": "checks",
+          "options": ["Dishwasher", "Washing machine", "Fridge water", "Boiling tap", "Water softener"] },
+        { "id": "boiler", "label": "Boiler in the kitchen?", "type": "yesno" },
+        { "id": "boilerWhere", "label": "Boiler make, position and clearances", "type": "text",
+          "hint": "Check the manual for side and front clearances",
+          "when": { "q": "boiler", "in": ["Yes"] } },
+        { "id": "boilerBox", "label": "Boiler to be boxed in a housing unit?", "type": "yesno",
+          "when": { "q": "boiler", "in": ["Yes"] } }
+      ]
+    },
+    {
+      "id": "cooking",
+      "title": "Cooking & extraction",
+      "photos": true,
+      "questions": [
+        { "id": "hobType", "label": "New hob type", "type": "choice",
+          "options": ["Gas", "Induction", "Ceramic", "Range cooker"] },
+        { "id": "gasPresent", "label": "Is there a gas supply in the room?", "type": "yesno" },
+        { "id": "gasPos", "label": "Gas supply position", "type": "text",
+          "when": { "q": "gasPresent", "in": ["Yes"] } },
+        { "id": "gasCap", "label": "Gas to be capped off?", "type": "yesno",
+          "hint": "Gas Safe engineer needed", "flag": ["Yes"],
+          "when": { "q": "gasPresent", "in": ["Yes"] } },
+        { "id": "cookerCct", "label": "Dedicated cooker circuit?", "type": "choice",
+          "options": ["Yes", "No", "Unsure"], "flag": ["No", "Unsure"] },
+        { "id": "cookerRating", "label": "Cooker circuit rating", "type": "choice",
+          "options": ["32A", "40A", "45A", "Unsure"],
+          "when": { "q": "cookerCct", "in": ["Yes"] } },
+        { "id": "extract", "label": "Extraction", "type": "choice",
+          "options": ["Ducted out", "Recirculating", "None yet"] },
+        { "id": "ductRoute", "label": "Duct route to outside", "type": "text",
+          "hint": "Core drill needed? Distance and number of bends",
+          "when": { "q": "extract", "in": ["Ducted out"] } }
+      ]
+    },
+    {
+      "id": "electrics",
+      "title": "Electrics",
+      "photos": true,
+      "questions": [
+        { "id": "cuLoc", "label": "Consumer unit location", "type": "text" },
+        { "id": "rcd", "label": "RCD protected?", "type": "choice",
+          "options": ["Yes", "No", "Unsure"], "flag": ["No"] },
+        { "id": "cuAge", "label": "Consumer unit condition", "type": "choice",
+          "options": ["Modern", "Older", "Rewireable fuses"], "flag": ["Rewireable fuses"] },
+        { "id": "sockets", "label": "Double sockets in the room now", "type": "number", "unit": "qty" },
+        { "id": "lighting", "label": "Current lighting", "type": "choice",
+          "options": ["Pendant", "Spotlights", "Fluorescent", "Other"] },
+        { "id": "elecWork", "label": "Electrical work wanted", "type": "checks",
+          "options": ["Extra sockets", "Move sockets", "Spotlights", "Under-unit lights", "Plinth lights", "Appliance spurs", "USB sockets"] }
+      ]
+    },
+    {
+      "id": "features",
+      "title": "Windows, doors & obstacles",
+      "photos": true,
+      "questions": [
+        { "id": "winSill", "label": "Window sill height", "type": "number", "unit": "mm",
+          "hint": "Must clear the worktop and any upstand" },
+        { "id": "winW", "label": "Window width", "type": "number", "unit": "mm" },
+        { "id": "winCorner", "label": "Window distance from nearest corner", "type": "number", "unit": "mm" },
+        { "id": "doors", "label": "Doors into the room", "type": "number", "unit": "qty" },
+        { "id": "radiator", "label": "Radiator", "type": "choice",
+          "options": ["None", "Staying", "Moving", "Plinth heater"] },
+        { "id": "obstacles", "label": "Obstacles to work around", "type": "checks",
+          "options": ["Soil stack", "Boxing", "Chimney breast", "Meter", "Pipes on wall", "Sloping ceiling", "Beam"] }
+      ]
+    },
+    {
+      "id": "wrapup",
+      "title": "Wrap-up",
+      "photos": true,
+      "questions": [
+        { "id": "otherTrades", "label": "Other trades needed", "type": "checks",
+          "options": ["Plasterer", "Electrician", "Gas Safe", "Plumber", "Tiler", "Floor fitter", "Builder"] },
+        { "id": "wants", "label": "What the customer wants", "type": "note" },
+        { "id": "concerns", "label": "Concerns / things to check", "type": "note" }
+      ]
+    }
+  ]
+};
+/* === SURVEY END === */
+</script>
+
+<style>
+  :root{
+    --paper:#EFF1EC;
+    --panel:#F7F8F5;
+    --panel-2:#E7EAE3;
+    --ink:#1C2422;
+    --ink-soft:#586059;
+    --line:#CDD3CA;
+    --line-strong:#AEB6AB;
+    --accent:#0E6E67;
+    --accent-deep:#0A4B46;
+    --accent-wash:#DBEAE7;
+    --warn:#B24A2E;
+    --warn-wash:#F6E3DC;
+    --font-display:'Archivo', system-ui, sans-serif;
+    --font-body:'Instrument Sans', system-ui, sans-serif;
+    --font-mono:'Spline Sans Mono', ui-monospace, monospace;
+    --radius:4px;
+    --shadow:0 1px 2px rgba(28,36,34,.06), 0 8px 24px rgba(28,36,34,.06);
+  }
+
+  *{box-sizing:border-box;}
+  /* manipulation = no double-tap-to-zoom and no 300ms tap delay. Pinch-zoom still works. */
+  html{-webkit-text-size-adjust:100%;touch-action:manipulation;}
+  body{
+    margin:0;
+    touch-action:manipulation;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--font-body);
+    font-size:16px;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{font-family:var(--font-display);margin:0;letter-spacing:-.01em;}
+  button{font:inherit;color:inherit;}
+  .seg button,.chip,.btn,.note-btn,.mbar button,.sec-link,.photo-add{touch-action:manipulation;}
+
+  .wrap{max-width:1120px;margin:0 auto;padding:28px 20px 140px;}
+
+  /* ---- Header ---- */
+  header.top{
+    border-bottom:2px solid var(--ink);
+    padding-bottom:18px;
+    margin-bottom:26px;
+  }
+  .brandline{
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--accent-deep);
+    margin-bottom:8px;
+  }
+  header.top h1{font-size:clamp(28px,5vw,44px);font-weight:800;line-height:1.02;}
+  header.top .tagline{color:var(--ink-soft);margin-top:8px;max-width:56ch;}
+
+  /* ---- Layout ---- */
+  .grid{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:34px;align-items:start;}
+  @media(max-width:860px){ .grid{grid-template-columns:minmax(0,1fr);gap:26px;} }
+
+  /* ---- Sections ---- */
+  .cat{margin-bottom:34px;scroll-margin-top:16px;}
+  .cat.hide{display:none;}
+  .cat > h2{
+    font-size:13px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:.14em;
+    color:var(--accent-deep);
+    padding-bottom:8px;
+    border-bottom:1px solid var(--line);
+    margin-bottom:4px;
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+  }
+  .cat-count{font-family:var(--font-mono);font-size:11px;color:var(--ink-soft);letter-spacing:0;}
+  .cat-count.done{color:var(--accent);}
+
+  .q{
+    padding:14px 6px;
+    border-bottom:1px solid var(--line);
+  }
+  .q.hide{display:none;}
+  .q.sub{border-left:3px solid var(--accent-wash);padding-left:14px;margin-left:4px;}
+  .q.flagged{background:var(--warn-wash);border-radius:var(--radius);border-bottom-color:transparent;}
+  .q-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:9px;}
+  .q-label{font-weight:500;}
+  .q-hint{font-size:12px;color:var(--ink-soft);font-style:italic;margin-top:1px;}
+  .note-btn{
+    flex:0 0 auto;background:none;border:none;cursor:pointer;padding:2px 0;
+    font-family:var(--font-mono);font-size:11px;letter-spacing:.06em;color:var(--ink-soft);
+    text-transform:uppercase;white-space:nowrap;
+  }
+  .note-btn:hover{color:var(--ink);}
+  .note-btn.has{color:var(--accent);}
+  .q-note{display:none;margin-top:9px;}
+  .q-note.open{display:block;}
+
+  /* slide tabs */
+  .seg{
+    position:relative;
+    display:grid;
+    grid-template-columns:repeat(var(--n),minmax(0,1fr));
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:3px;
+    max-width:520px;
+  }
+  .seg-pill{
+    position:absolute;top:3px;bottom:3px;left:3px;
+    width:calc((100% - 6px) / var(--n));
+    transform:translateX(calc(var(--i, 0) * 100%));
+    background:var(--accent);
+    border-radius:4px;
+    box-shadow:0 1px 3px rgba(10,75,70,.3);
+    transition:transform .22s cubic-bezier(.3,.7,.3,1), opacity .15s;
+    opacity:0;
+  }
+  .seg.set .seg-pill{opacity:1;}
+  .seg.set.warn .seg-pill{background:var(--warn);box-shadow:0 1px 3px rgba(178,74,46,.3);}
+  .seg button{
+    position:relative;z-index:1;
+    background:none;border:none;cursor:pointer;
+    padding:9px 6px;min-height:40px;
+    font-size:14px;font-weight:500;line-height:1.2;
+    color:var(--ink-soft);
+    transition:color .18s;
+  }
+  .seg button:hover{color:var(--ink);}
+  .seg button.on{color:#fff;}
+
+  /* chips */
+  .chips{display:flex;flex-wrap:wrap;gap:7px;}
+  .chip{
+    display:inline-flex;align-items:center;gap:7px;
+    border:1px solid var(--line-strong);background:var(--panel);
+    border-radius:999px;padding:7px 13px;cursor:pointer;
+    font-size:14px;line-height:1.2;transition:all .12s;
+  }
+  .chip:hover{border-color:var(--ink);}
+  .chip .tk{
+    width:14px;height:14px;border:1.5px solid var(--line-strong);border-radius:3px;
+    display:grid;place-items:center;background:#fff;
+  }
+  .chip .tk svg{width:10px;height:10px;stroke:#fff;stroke-width:3.5;fill:none;opacity:0;}
+  .chip.on{background:var(--accent-wash);border-color:var(--accent);color:var(--accent-deep);}
+  .chip.on .tk{background:var(--accent);border-color:var(--accent);}
+  .chip.on .tk svg{opacity:1;}
+  .chip.on.warn{background:var(--warn-wash);border-color:var(--warn);color:var(--warn);}
+  .chip.on.warn .tk{background:var(--warn);border-color:var(--warn);}
+
+  /* text and number boxes. Everything at 16px: iOS zooms the page on smaller inputs. */
+  .num{display:flex;align-items:center;gap:8px;}
+  .num input{width:140px;font-family:var(--font-mono);}
+  .num .unit{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);letter-spacing:.04em;}
+  .q input[type=text],.q input[type=number],.q textarea,.field input,.field textarea{
+    width:100%;border:1px solid var(--line-strong);border-radius:var(--radius);
+    padding:8px 10px;font-family:var(--font-body);font-size:16px;background:#fff;color:var(--ink);
+  }
+  .q .num input{width:140px;font-family:var(--font-mono);}
+  .q textarea,.field textarea{resize:vertical;min-height:70px;}
+  .q input:focus,.q textarea:focus,.field input:focus,.field textarea:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:var(--accent);}
+
+  /* photos */
+  .photos{padding:14px 6px 4px;}
+  .photo-grid{display:flex;flex-wrap:wrap;gap:8px;}
+  .photo{position:relative;width:96px;height:96px;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line-strong);background:var(--panel-2);}
+  .photo img{width:100%;height:100%;object-fit:cover;display:block;}
+  .photo button{
+    position:absolute;top:4px;right:4px;width:24px;height:24px;border-radius:50%;
+    border:none;background:rgba(28,36,34,.75);color:#fff;cursor:pointer;font-size:14px;line-height:1;
+  }
+  .photo-add{
+    width:96px;height:96px;border:1.5px dashed var(--line-strong);border-radius:var(--radius);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+    cursor:pointer;color:var(--ink-soft);font-size:12px;background:transparent;
+  }
+  .photo-add:hover{border-color:var(--ink);color:var(--ink);}
+  .photo-add svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;}
+  .photo-add input{display:none;}
+
+  /* ---- Summary slip ---- */
+  .slip-wrap{position:sticky;top:20px;}
+  .slip{
+    background:var(--panel);
+    border:1px solid var(--line-strong);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    overflow:hidden;
+  }
+  .slip .slip-head{
+    background:var(--ink);
+    color:var(--paper);
+    padding:16px 18px;
+    display:flex;justify-content:space-between;align-items:baseline;
+  }
+  .slip .slip-head h2{font-size:15px;letter-spacing:.1em;text-transform:uppercase;}
+  .slip .ref{font-family:var(--font-mono);font-size:11px;color:#9fb0ac;}
+  .slip-body{padding:16px 18px;}
+
+  .prog{display:flex;justify-content:space-between;align-items:baseline;}
+  .prog .lbl{font-family:var(--font-display);font-weight:700;text-transform:uppercase;letter-spacing:.08em;font-size:13px;}
+  .prog .amt{font-family:var(--font-mono);font-weight:600;font-size:26px;color:var(--accent-deep);font-variant-numeric:tabular-nums;}
+  .bar{height:6px;background:var(--panel-2);border-radius:3px;overflow:hidden;margin:8px 0 14px;}
+  .bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .3s;}
+
+  .sec-link{
+    display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;
+    padding:8px 0;border:none;border-bottom:1px dashed var(--line);background:none;cursor:pointer;
+    font-size:14px;text-align:left;
+  }
+  .sec-link:last-child{border-bottom:none;}
+  .sec-link:hover .s-name{color:var(--accent-deep);text-decoration:underline;}
+  .sec-link .s-n{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);font-variant-numeric:tabular-nums;white-space:nowrap;}
+  .sec-link.done .s-n{color:var(--accent);}
+
+  .flags{margin-top:16px;padding-top:14px;border-top:2px solid var(--ink);}
+  .flags h3,.details h3{font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:var(--ink-soft);margin-bottom:8px;font-weight:600;}
+  .flags h3{color:var(--warn);}
+  .flag-item{font-size:13px;padding:6px 0 6px 12px;border-left:3px solid var(--warn);margin-bottom:6px;background:var(--warn-wash);border-radius:0 var(--radius) var(--radius) 0;cursor:pointer;}
+  .flag-item b{font-weight:600;}
+  .flags-none{font-size:13px;color:var(--ink-soft);}
+
+  .details{margin-top:16px;padding-top:14px;border-top:1px solid var(--line);}
+  .field{margin-bottom:9px;}
+  .field label{display:block;font-size:11px;color:var(--ink-soft);margin-bottom:3px;font-family:var(--font-mono);letter-spacing:.03em;}
+  .field textarea{min-height:44px;}
+
+  .actions{display:flex;flex-direction:column;gap:9px;margin-top:16px;}
+  .btn{
+    font-family:var(--font-display);font-weight:600;font-size:14px;
+    padding:12px 14px;border-radius:var(--radius);cursor:pointer;border:1px solid transparent;
+    display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s;letter-spacing:.01em;
+  }
+  .btn.primary{background:var(--accent);color:#fff;}
+  .btn.primary:hover{background:var(--accent-deep);}
+  .btn.ghost{background:transparent;color:var(--ink);border-color:var(--line-strong);}
+  .btn.ghost:hover{border-color:var(--ink);}
+  .btn.danger{background:transparent;color:var(--warn);border-color:transparent;font-size:13px;padding:8px;}
+  .btn.danger:hover{border-color:var(--warn);}
+  .btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;}
+  .disclaim{font-size:11px;color:var(--ink-soft);margin-top:14px;line-height:1.45;border-top:1px solid var(--line);padding-top:12px;}
+
+  /* mobile sticky progress */
+  .mbar{display:none;}
+  @media(max-width:860px){
+    .slip-wrap{position:static;}
+    .mbar{
+      display:flex;position:fixed;left:0;right:0;bottom:0;z-index:30;
+      background:var(--ink);color:var(--paper);padding:12px 18px;
+      align-items:center;justify-content:space-between;gap:14px;
+      box-shadow:0 -4px 20px rgba(0,0,0,.15);
+    }
+    .mbar .m-total{font-family:var(--font-mono);font-weight:600;font-size:20px;}
+    .mbar .m-total small{display:block;font-size:10px;letter-spacing:.1em;color:#9fb0ac;text-transform:uppercase;font-weight:400;}
+    .mbar .m-flags{color:#F0A890;font-size:12px;margin-left:8px;font-weight:500;}
+    .mbar button{font-family:var(--font-display);font-weight:600;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);padding:10px 16px;font-size:14px;cursor:pointer;}
+  }
+  @media(max-width:420px){
+    .wrap{padding:22px 16px 120px;}
+    .seg button{font-size:13px;padding:9px 3px;}
+  }
+
+  /* toast */
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--paper);padding:12px 20px;border-radius:var(--radius);font-size:14px;opacity:0;pointer-events:none;transition:all .25s;z-index:60;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  /* print */
+  #printDoc{display:none;}
+  @media print{
+    body{background:#fff;}
+    .wrap,.mbar,.toast{display:none !important;}
+    #printDoc{display:block;color:#000;font-family:var(--font-body);}
+    #printDoc .p-head{display:flex;justify-content:space-between;border-bottom:2px solid #000;padding-bottom:12px;margin-bottom:14px;}
+    #printDoc h1{font-family:var(--font-display);font-size:26px;}
+    #printDoc h2{font-family:var(--font-display);font-size:14px;text-transform:uppercase;letter-spacing:.1em;margin:20px 0 6px;padding-bottom:4px;border-bottom:1px solid #000;break-after:avoid;}
+    #printDoc .p-meta{font-size:12px;color:#444;margin-top:2px;}
+    #printDoc .p-cust{font-size:13px;line-height:1.5;}
+    #printDoc .p-line{display:flex;justify-content:space-between;gap:16px;padding:5px 0;border-bottom:1px solid #ddd;font-size:13px;break-inside:avoid;}
+    #printDoc .p-line span:last-child{font-weight:600;text-align:right;}
+    #printDoc .p-note{font-size:12px;color:#444;font-style:italic;padding:0 0 5px;border-bottom:1px solid #ddd;margin-top:-1px;}
+    #printDoc .p-flag{font-size:13px;padding:4px 0 4px 10px;border-left:3px solid #B24A2E;margin-bottom:4px;}
+    #printDoc .p-skip{font-size:11px;color:#777;margin-top:4px;}
+    #printDoc .p-text{font-size:13px;white-space:pre-wrap;padding:4px 0 8px;border-bottom:1px solid #ddd;}
+    #printDoc .p-photos{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}
+    #printDoc .p-photos img{width:100%;break-inside:avoid;border:1px solid #ccc;}
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <div class="brandline" id="brandline"></div>
+      <h1 id="bizName"></h1>
+      <p class="tagline" id="tagline"></p>
+    </header>
+
+    <div class="grid">
+      <div id="survey"></div>
+
+      <div class="slip-wrap" id="slipWrap">
+        <div class="slip">
+          <div class="slip-head">
+            <h2>Survey</h2>
+            <span class="ref" id="ref"></span>
+          </div>
+          <div class="slip-body">
+            <div class="prog">
+              <span class="lbl">Answered</span>
+              <span class="amt" id="progAmt">0 / 0</span>
+            </div>
+            <div class="bar"><i id="progBar"></i></div>
+            <div id="secList"></div>
+
+            <div class="flags">
+              <h3 id="flagsHead">Follow up</h3>
+              <div id="flagList"></div>
+            </div>
+
+            <div class="details">
+              <h3>Job details</h3>
+              <div class="field"><label>Customer</label><input id="dName" type="text" autocomplete="off"></div>
+              <div class="field"><label>Address</label><textarea id="dAddr"></textarea></div>
+              <div class="field"><label>Phone</label><input id="dPhone" type="tel" autocomplete="off"></div>
+              <div class="field"><label>Surveyed by</label><input id="dBy" type="text" autocomplete="off"></div>
+            </div>
+
+            <div class="actions">
+              <button class="btn primary" id="printBtn">
+                <svg viewBox="0 0 24 24"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6z"/></svg>
+                Save / print as PDF
+              </button>
+              <button class="btn ghost" id="copyBtn">
+                <svg viewBox="0 0 24 24"><path d="M9 9h11v11H9zM5 15H4V4h11v1"/></svg>
+                Copy as text
+              </button>
+              <button class="btn danger" id="newBtn">Start a new survey</button>
+            </div>
+            <p class="disclaim" id="saveNote"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mbar">
+    <div class="m-total"><small>Answered</small><span id="mProg">0 / 0</span><span class="m-flags" id="mFlags"></span></div>
+    <button id="mScroll">View summary</button>
+  </div>
+
+  <div id="printDoc"></div>
+  <div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const svgTick = '<svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>';
+  const STORE = 'kitchen-survey-draft';
+
+  // Flat lookups over the config
+  const Q = {}, SEC = {};
+  CONFIG.sections.forEach(s => {
+    SEC[s.id] = s;
+    s.questions.forEach(q => { q.section = s.id; Q[q.id] = q; });
+  });
+
+  let state = { answers:{}, notes:{}, details:{}, started:new Date().toISOString() };
+  const photos = {};   // sectionId -> [dataURL]; kept in memory only, too big to autosave
+
+  function load(){
+    if (!CONFIG.autosave) return;
+    try {
+      const raw = localStorage.getItem(STORE);
+      if (raw) state = Object.assign(state, JSON.parse(raw));
+    } catch(e){}
+  }
+  function save(){
+    if (!CONFIG.autosave) return;
+    try { localStorage.setItem(STORE, JSON.stringify(state)); } catch(e){}
+  }
+
+  const opts = q => q.type === 'yesno' ? ['Yes','No'] : (q.options || []);
+  const isSet = v => Array.isArray(v) ? v.length > 0 : (v !== undefined && v !== null && String(v).trim() !== '');
+  const counts = q => q.type !== 'note';
+
+  function condMet(when){
+    if (!when) return true;
+    if (Q[when.q] && !visible(Q[when.q])) return false;
+    const v = state.answers[when.q];
+    if (Array.isArray(v)) return v.some(x => when.in.includes(x));
+    return when.in.includes(v);
+  }
+  function secVisible(s){ return condMet(s.when); }
+  function visible(q){ return secVisible(SEC[q.section]) && condMet(q.when); }
+
+  function flaggedVals(q){
+    const v = state.answers[q.id];
+    if (!q.flag || !isSet(v)) return [];
+    return (Array.isArray(v) ? v : [v]).filter(x => q.flag.includes(x));
+  }
+
+  function fmtAnswer(q, v){
+    if (!isSet(v)) return '';
+    if (Array.isArray(v)) return v.join(', ');
+    if (q.type === 'number') return v + (q.unit && q.unit !== 'qty' ? ' ' + q.unit : '');
+    return String(v);
+  }
+
+  // ---------- Build the checklist ----------
+  function renderControl(q){
+    const v = state.answers[q.id];
+    const o = opts(q);
+    if (q.type === 'choice' || q.type === 'yesno'){
+      if (o.length <= 4){
+        return '<div class="seg" data-q="'+q.id+'" style="--n:'+o.length+'"><span class="seg-pill"></span>' +
+          o.map((x,i) => '<button type="button" data-i="'+i+'">'+esc(x)+'</button>').join('') + '</div>';
+      }
+      return '<div class="chips" data-q="'+q.id+'" data-single="1">' +
+        o.map((x,i) => '<button type="button" class="chip" data-i="'+i+'">'+esc(x)+'</button>').join('') + '</div>';
+    }
+    if (q.type === 'checks'){
+      return '<div class="chips" data-q="'+q.id+'">' +
+        o.map((x,i) => '<button type="button" class="chip" data-i="'+i+'"><span class="tk">'+svgTick+'</span>'+esc(x)+'</button>').join('') + '</div>';
+    }
+    if (q.type === 'number'){
+      return '<div class="num"><input type="number" inputmode="decimal" data-q="'+q.id+'" value="'+esc(v)+'">' +
+        (q.unit ? '<span class="unit">'+esc(q.unit)+'</span>' : '') + '</div>';
+    }
+    if (q.type === 'note'){
+      return '<textarea data-q="'+q.id+'">'+esc(v)+'</textarea>';
+    }
+    return '<input type="text" data-q="'+q.id+'" value="'+esc(v)+'">';
+  }
+
+  function render(){
+    $('bizName').textContent = CONFIG.business;
+    $('brandline').textContent = CONFIG.brandline;
+    $('tagline').textContent = CONFIG.tagline;
+    document.title = CONFIG.business;
+
+    const root = $('survey');
+    root.innerHTML = '';
+    CONFIG.sections.forEach(s => {
+      const el = document.createElement('section');
+      el.className = 'cat';
+      el.id = 'sec-' + s.id;
+      let html = '<h2><span>'+esc(s.title)+'</span><span class="cat-count" id="cnt-'+s.id+'"></span></h2>';
+      s.questions.forEach(q => {
+        const note = state.notes[q.id] || '';
+        const canNote = q.type !== 'note';
+        html += '<div class="q'+(q.when ? ' sub' : '')+'" id="q-'+q.id+'">' +
+          '<div class="q-head"><div><div class="q-label">'+esc(q.label)+'</div>' +
+          (q.hint ? '<div class="q-hint">'+esc(q.hint)+'</div>' : '') + '</div>' +
+          (canNote ? '<button type="button" class="note-btn'+(note ? ' has' : '')+'" data-note="'+q.id+'">'+(note ? 'Note ✓' : '+ Note')+'</button>' : '') +
+          '</div>' + renderControl(q) +
+          (canNote ? '<div class="q-note'+(note ? ' open' : '')+'"><textarea data-notefor="'+q.id+'" placeholder="Note">'+esc(note)+'</textarea></div>' : '') +
+          '</div>';
+      });
+      if (s.photos){
+        html += '<div class="photos"><div class="photo-grid" id="ph-'+s.id+'"></div></div>';
+      }
+      el.innerHTML = html;
+      root.appendChild(el);
+      if (s.photos) renderPhotos(s.id);
+    });
+
+    $('dName').value = state.details.name || '';
+    $('dAddr').value = state.details.addr || '';
+    $('dPhone').value = state.details.phone || '';
+    $('dBy').value = state.details.by || '';
+    $('saveNote').textContent = CONFIG.autosave
+      ? 'Answers save on this device as you go. Photos are not saved, so print or save the PDF before closing the page.'
+      : 'Nothing is saved. Print or save the PDF before closing the page.';
+    refresh();
+  }
+
+  // ---------- Update visible state without rebuilding (keeps typing focus) ----------
+  function refresh(){
+    let total = 0, done = 0;
+    const flags = [];
+    CONFIG.sections.forEach(s => {
+      const sv = secVisible(s);
+      $('sec-' + s.id).classList.toggle('hide', !sv);
+      let st = 0, sd = 0;
+      s.questions.forEach(q => {
+        const el = $('q-' + q.id);
+        const vis = sv && condMet(q.when);
+        el.classList.toggle('hide', !vis);
+        const v = state.answers[q.id];
+        const fv = vis ? flaggedVals(q) : [];
+        el.classList.toggle('flagged', fv.length > 0);
+        if (vis && fv.length) flags.push({ q, vals:fv });
+        if (vis && counts(q)){ st++; if (isSet(v)) sd++; }
+
+        const seg = el.querySelector('.seg');
+        if (seg){
+          const i = opts(q).indexOf(v);
+          seg.style.setProperty('--i', Math.max(i, 0));
+          seg.classList.toggle('set', i >= 0);
+          seg.classList.toggle('warn', fv.length > 0);
+          seg.querySelectorAll('button').forEach((b,j) => b.classList.toggle('on', j === i));
+        }
+        const chips = el.querySelector('.chips');
+        if (chips){
+          const arr = Array.isArray(v) ? v : (isSet(v) ? [v] : []);
+          chips.querySelectorAll('.chip').forEach((b,j) => {
+            const val = opts(q)[j];
+            const on = arr.includes(val);
+            b.classList.toggle('on', on);
+            b.classList.toggle('warn', on && q.flag && q.flag.includes(val));
+          });
+        }
+      });
+      if (sv){ total += st; done += sd; }
+      const cnt = $('cnt-' + s.id);
+      cnt.textContent = sd + ' / ' + st;
+      cnt.classList.toggle('done', st > 0 && sd === st);
+      s._st = st; s._sd = sd; s._vis = sv;
+    });
+
+    $('progAmt').textContent = done + ' / ' + total;
+    $('mProg').textContent = done + ' / ' + total;
+    $('progBar').style.width = (total ? done / total * 100 : 0) + '%';
+    $('mFlags').textContent = flags.length ? flags.length + ' to follow up' : '';
+
+    $('secList').innerHTML = CONFIG.sections.filter(s => s._vis).map(s =>
+      '<button type="button" class="sec-link'+(s._st && s._sd === s._st ? ' done' : '')+'" data-goto="'+s.id+'">' +
+      '<span class="s-name">'+esc(s.title)+'</span><span class="s-n">'+(s._sd === s._st && s._st ? '✓ ' : '')+s._sd+' / '+s._st+'</span></button>'
+    ).join('');
+
+    $('flagsHead').textContent = 'Follow up' + (flags.length ? ' (' + flags.length + ')' : '');
+    $('flagList').innerHTML = flags.length
+      ? flags.map(f => '<div class="flag-item" data-jump="'+f.q.id+'">'+esc(f.q.label)+' <b>'+esc(f.vals.join(', '))+'</b></div>').join('')
+      : '<div class="flags-none">Nothing flagged yet.</div>';
+
+    $('ref').textContent = new Date(state.started).toLocaleDateString('en-GB');
+    save();
+  }
+
+  // ---------- Input handling ----------
+  const root = $('survey');
+  root.addEventListener('click', e => {
+    const segBtn = e.target.closest('.seg button');
+    const chip = e.target.closest('.chip');
+    const noteBtn = e.target.closest('.note-btn');
+    if (segBtn || chip){
+      const box = (segBtn || chip).parentElement;
+      const q = Q[box.dataset.q];
+      const val = opts(q)[+(segBtn || chip).dataset.i];
+      if (q.type === 'checks'){
+        let arr = Array.isArray(state.answers[q.id]) ? state.answers[q.id].slice() : [];
+        arr = arr.includes(val) ? arr.filter(x => x !== val) : arr.concat(val);
+        state.answers[q.id] = arr;
+      } else {
+        // tapping the selected option again clears it
+        state.answers[q.id] = state.answers[q.id] === val ? undefined : val;
+      }
+      refresh();
+    } else if (noteBtn){
+      const wrap = $('q-' + noteBtn.dataset.note).querySelector('.q-note');
+      wrap.classList.toggle('open');
+      if (wrap.classList.contains('open')) wrap.querySelector('textarea').focus();
+    }
+  });
+  root.addEventListener('input', e => {
+    const t = e.target;
+    if (t.dataset.q){
+      state.answers[t.dataset.q] = t.value;
+      refresh();
+    } else if (t.dataset.notefor){
+      state.notes[t.dataset.notefor] = t.value;
+      const btn = $('q-' + t.dataset.notefor).querySelector('.note-btn');
+      btn.classList.toggle('has', !!t.value.trim());
+      btn.textContent = t.value.trim() ? 'Note ✓' : '+ Note';
+      save();
+    }
+  });
+
+  [['dName','name'],['dAddr','addr'],['dPhone','phone'],['dBy','by']].forEach(([id,k]) => {
+    $(id).addEventListener('input', e => { state.details[k] = e.target.value; save(); });
+  });
+
+  function jumpTo(el){
+    el.scrollIntoView({ behavior:'smooth', block:'start' });
+  }
+  $('secList').addEventListener('click', e => {
+    const b = e.target.closest('[data-goto]');
+    if (b) jumpTo($('sec-' + b.dataset.goto));
+  });
+  $('flagList').addEventListener('click', e => {
+    const b = e.target.closest('[data-jump]');
+    if (!b) return;
+    const el = $('q-' + b.dataset.jump);
+    el.scrollIntoView({ behavior:'smooth', block:'center' });
+  });
+  $('mScroll').addEventListener('click', () => jumpTo($('slipWrap')));
+
+  // ---------- Photos ----------
+  function renderPhotos(sid){
+    const grid = $('ph-' + sid);
+    const list = photos[sid] || [];
+    grid.innerHTML = list.map((src,i) =>
+      '<div class="photo"><img src="'+src+'" alt=""><button type="button" data-del="'+i+'" aria-label="Remove photo">×</button></div>'
+    ).join('') +
+      '<label class="photo-add"><svg viewBox="0 0 24 24"><path d="M3 7h4l2-3h6l2 3h4v13H3z"/><circle cx="12" cy="13" r="4"/></svg>Add photo' +
+      '<input type="file" accept="image/*" multiple data-sec="'+sid+'"></label>';
+  }
+  function shrink(file){
+    return new Promise(res => {
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => {
+        const max = 1400, k = Math.min(1, max / Math.max(img.width, img.height));
+        const c = document.createElement('canvas');
+        c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(url);
+        res(c.toDataURL('image/jpeg', 0.8));
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); res(null); };
+      img.src = url;
+    });
+  }
+  root.addEventListener('change', async e => {
+    const inp = e.target;
+    if (!inp.dataset.sec) return;
+    const sid = inp.dataset.sec;
+    for (const f of inp.files){
+      const d = await shrink(f);
+      if (d) (photos[sid] = photos[sid] || []).push(d);
+    }
+    renderPhotos(sid);
+  });
+  root.addEventListener('click', e => {
+    const del = e.target.closest('[data-del]');
+    if (!del) return;
+    const sid = del.closest('.photo-grid').id.slice(3);
+    photos[sid].splice(+del.dataset.del, 1);
+    renderPhotos(sid);
+  });
+
+  // ---------- Output ----------
+  function collect(){
+    return CONFIG.sections.filter(secVisible).map(s => {
+      const rows = [], texts = [];
+      let skipped = 0;
+      s.questions.filter(visible).forEach(q => {
+        const v = state.answers[q.id];
+        const note = (state.notes[q.id] || '').trim();
+        if (q.type === 'note'){ if (isSet(v)) texts.push({ label:q.label, text:v }); return; }
+        if (!isSet(v) && !note){ skipped++; return; }
+        rows.push({ label:q.label, answer:fmtAnswer(q, v) || '—', note, flag:flaggedVals(q).length > 0 });
+      });
+      return { s, rows, texts, skipped, photos:photos[s.id] || [] };
+    });
+  }
+  function allFlags(){
+    const out = [];
+    CONFIG.sections.forEach(s => s.questions.forEach(q => {
+      if (visible(q)){ const fv = flaggedVals(q); if (fv.length) out.push(q.label + ' — ' + fv.join(', ')); }
+    }));
+    return out;
+  }
+
+  function buildPrint(){
+    const d = state.details;
+    const date = new Date(state.started).toLocaleDateString('en-GB');
+    let html = '<div class="p-head"><div><h1>'+esc(CONFIG.business)+'</h1>' +
+      '<div class="p-meta">Site survey · '+date+(d.by ? ' · by '+esc(d.by) : '')+'</div></div>' +
+      '<div class="p-cust">'+(d.name ? '<strong>'+esc(d.name)+'</strong><br>' : '') +
+      esc(d.addr || '').replace(/\n/g,'<br>') + (d.phone ? '<br>'+esc(d.phone) : '') + '</div></div>';
+    const fl = allFlags();
+    if (fl.length){
+      html += '<h2>Follow up</h2>' + fl.map(f => '<div class="p-flag">'+esc(f)+'</div>').join('');
+    }
+    collect().forEach(c => {
+      if (!c.rows.length && !c.texts.length && !c.photos.length) return;
+      html += '<h2>'+esc(c.s.title)+'</h2>';
+      c.rows.forEach(r => {
+        html += '<div class="p-line"><span>'+(r.flag ? '⚠ ' : '')+esc(r.label)+'</span><span>'+esc(r.answer)+'</span></div>';
+        if (r.note) html += '<div class="p-note">'+esc(r.note)+'</div>';
+      });
+      c.texts.forEach(t => { html += '<div class="p-line"><span>'+esc(t.label)+'</span><span></span></div><div class="p-text">'+esc(t.text)+'</div>'; });
+      if (c.skipped) html += '<div class="p-skip">'+c.skipped+' question'+(c.skipped !== 1 ? 's' : '')+' not answered</div>';
+      if (c.photos.length) html += '<div class="p-photos">'+c.photos.map(p => '<img src="'+p+'">').join('')+'</div>';
+    });
+    $('printDoc').innerHTML = html;
+  }
+
+  function buildText(){
+    const d = state.details;
+    const L = [];
+    L.push(CONFIG.business.toUpperCase() + ' — ' + new Date(state.started).toLocaleDateString('en-GB'));
+    if (d.name) L.push('Customer: ' + d.name);
+    if (d.addr) L.push('Address: ' + d.addr.replace(/\n/g, ', '));
+    if (d.phone) L.push('Phone: ' + d.phone);
+    if (d.by) L.push('Surveyed by: ' + d.by);
+    const fl = allFlags();
+    if (fl.length){ L.push('', 'FOLLOW UP'); fl.forEach(f => L.push('! ' + f)); }
+    collect().forEach(c => {
+      if (!c.rows.length && !c.texts.length) return;
+      L.push('', c.s.title.toUpperCase());
+      c.rows.forEach(r => {
+        L.push('- ' + r.label + ': ' + r.answer);
+        if (r.note) L.push('    Note: ' + r.note);
+      });
+      c.texts.forEach(t => L.push('- ' + t.label + ':', '    ' + t.text.replace(/\n/g, '\n    ')));
+    });
+    return L.join('\n');
+  }
+
+  function toast(msg){
+    const t = $('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toast._t);
+    toast._t = setTimeout(() => t.classList.remove('show'), 2200);
+  }
+
+  $('printBtn').addEventListener('click', () => { buildPrint(); window.print(); });
+  $('copyBtn').addEventListener('click', async () => {
+    const txt = buildText();
+    try { await navigator.clipboard.writeText(txt); toast('Survey copied'); }
+    catch(e){
+      const ta = document.createElement('textarea');
+      ta.value = txt; document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); toast('Survey copied'); } catch(_){ toast('Could not copy'); }
+      ta.remove();
+    }
+  });
+  $('newBtn').addEventListener('click', () => {
+    if (!confirm('Clear every answer, note and photo and start a new survey?')) return;
+    state = { answers:{}, notes:{}, details:{}, started:new Date().toISOString() };
+    Object.keys(photos).forEach(k => delete photos[k]);
+    try { localStorage.removeItem(STORE); } catch(e){}
+    render();
+    window.scrollTo({ top:0, behavior:'smooth' });
+    toast('New survey started');
+  });
+  window.addEventListener('beforeprint', buildPrint);
+
+  load();
+  render();
+})();
+</script>
+</body>
+</html>
