@@ -39,6 +39,7 @@
        "flagDetail" show another answer in place of a flagged option, e.g.
                     "flagDetail": { "Other": "wtDepthOther" } lists "Other" as
                     the measured depth, and that box goes red along with it
+       "flagJoin"   other follow-up questions that share the red area, e.g. ["sinkMoveNote"]
 
      Optional on a section:
        "when"    hide the whole section until an answer matches
@@ -149,7 +150,7 @@ const CONFIG = {
             { "id": "sinkPos", "label": "Sink position", "type": "choice",
               "options": ["Staying", "Moving"],
               "flag": ["Moving"], "flagLabel": "Sink", "flagNote": "waste and water feeds need rerouting",
-              "flagDetail": { "Moving": "sinkMoveDist" } },
+              "flagDetail": { "Moving": "sinkMoveDist" }, "flagJoin": ["sinkMoveNote"] },
             { "id": "sinkMoveDist", "label": "How far is it moving?", "type": "number", "unit": "mm",
               "when": { "q": "sinkPos", "in": ["Moving"] } },
             { "id": "sinkMoveNote", "label": "Where is it moving to?", "type": "note",
@@ -556,6 +557,7 @@ const CONFIG = {
   .q.flagged:has(+ .num-grid.flagged-row),.q.flagged:has(+ .q.flag-joined){border-radius:var(--radius) var(--radius) 0 0;}
   .num-grid.flagged-row,.q.flag-joined:not(.num-grid .q){background:var(--warn-wash);border-radius:0 0 var(--radius) var(--radius);border-bottom-color:transparent;margin-top:-1px;padding-left:10px;padding-right:10px;}
   .num-grid.flagged-row .q{padding-top:0;}
+  .num-grid.flagged-row:has(+ .q.flag-joined){border-radius:0;}
   .q-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:9px;}
   .q-label{font-weight:500;}
   .q-hint{font-size:12px;color:var(--ink-soft);font-style:italic;margin-top:1px;}
@@ -1073,7 +1075,8 @@ const CONFIG = {
           const v = state.answers[k];
           const fv = vis ? flaggedVals(q, i) : [];
           const par = q.when && Q[q.when.q];
-          const parFlag = par && par.flagDetail && Object.values(par.flagDetail).includes(q.id) && flaggedVals(par, i).length > 0;
+          const joins = par ? Object.values(par.flagDetail || {}).concat(par.flagJoin || []) : [];
+          const parFlag = joins.includes(q.id) && flaggedVals(par, i).length > 0;
           el.classList.toggle('flagged', fv.length > 0);
           el.classList.toggle('flag-joined', !!(vis && parFlag));
           if (fv.length){ sf++; flags.push({ q, i, s, vals:fv }); }
