@@ -114,7 +114,15 @@ const CONFIG = {
               "options": ["Tiles", "Vinyl / LVT", "Laminate / wood", "Bare"] },
             { "id": "keepFloor", "label": "Is the customer keeping the current floor?", "type": "yesno",
               "hint": "If so, units go on top of it, so check its condition and height",
+              "flag": ["Yes"], "flagNote": "units sit on the existing floor, check plinth height",
+              "flagLabel": "Keeping current floor",
               "when": { "q": "floorFinish", "in": ["Tiles", "Vinyl / LVT", "Laminate / wood"] } },
+            { "id": "floorRun", "label": "Does the current floor run to the walls, or only up to the old kitchen?", "type": "choice",
+              "options": ["To the walls", "To the old units", "Unsure"],
+              "hint": "Hard to make a new layout line up with old floor edges",
+              "flag": ["To the old units", "Unsure"], "flagNote": "new units may not line up with the old floor edge",
+              "flagLabel": "Current floor runs",
+              "when": { "q": "keepFloor", "in": ["Yes"] } },
             { "id": "floorLevel", "label": "Is the floor level?", "type": "choice",
               "options": ["Level", "Slight fall", "Needs levelling"], "flag": ["Needs levelling"] }
           ]
