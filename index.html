@@ -102,6 +102,10 @@ const CONFIG = {
             { "id": "roomL", "label": "Room length", "type": "number", "unit": "mm" },
             { "id": "roomW", "label": "Room width", "type": "number", "unit": "mm" },
             { "id": "ceilH", "label": "Ceiling height", "type": "number", "unit": "mm" },
+            { "id": "winSill", "label": "Window sill height", "type": "number", "unit": "mm",
+              "hint": "Must clear worktop and upstand" },
+            { "id": "cad", "label": "Is a 3D CAD measure being done?", "type": "yesno",
+              "flag": ["No"], "flagLabel": "No 3D CAD measure", "flagNote": "only these basic room sizes to work from" },
             { "id": "ceilingDrop", "label": "Is there a sloped or lower section of ceiling?", "type": "yesno" },
             { "id": "ceilingDropNote", "label": "What is it and where?", "type": "text",
               "hint": "e.g. slopes down over the back wall to about 2100mm",
@@ -135,23 +139,6 @@ const CONFIG = {
               "hint": "e.g. badly out of square, damp, cracks, hollow plaster. Leave blank if nothing." },
             { "id": "floorNotes", "label": "Floor notes", "type": "note",
               "hint": "e.g. uneven, soft spots, damp. Leave blank if nothing." }
-          ]
-        },
-        {
-          "id": "windows",
-          "title": "Windows",
-          "repeat": "Window",
-          "photos": true,
-          "questions": [
-            { "id": "winW", "label": "Width", "type": "number", "unit": "mm" },
-            { "id": "winH", "label": "Height", "type": "number", "unit": "mm" },
-            { "id": "winSill", "label": "Floor to sill", "type": "number", "unit": "mm",
-              "hint": "Must clear worktop and upstand" },
-            { "id": "winCorner", "label": "Distance from corner", "type": "number", "unit": "mm" },
-            { "id": "winReveal", "label": "Reveal depth", "type": "number", "unit": "mm" },
-            { "id": "winOpen", "label": "Opening type", "type": "choice",
-              "options": ["Side hung", "Top hung", "Sash", "Fixed"],
-              "hint": "Check the opener clears the tap" }
           ]
         },
         {
