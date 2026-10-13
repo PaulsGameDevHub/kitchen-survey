@@ -27,6 +27,7 @@
        "when"  only show it after another answer, e.g.
                "when": { "q": "wasteSeen", "in": ["Yes"] }
                or hide it after one: "when": { "q": "keepFloor", "notIn": ["Yes"] }
+               A list [ {…}, {…} ] needs all of them; { "any": [ {…}, {…} ] } needs one.
        "flag"  answers that go on the follow-up list, e.g. "flag": ["No"]
        "flagAbove"  for numbers: flag anything bigger, e.g. "flagAbove": 600
        "flagNote"   a reason added to the follow-up list when it's flagged, or one
@@ -336,9 +337,19 @@ const CONFIG = {
               "options": ["Gas", "Induction", "Ceramic", "Range cooker"],
               "flag": ["Gas"], "flagWhen": { "q": "gasPresent", "in": ["No"] },
               "flagLabel": "Hob", "flagNote": "there is currently no gas in the room, a new supply is needed" },
+            { "id": "rangeFuel", "label": "Range cooker fuel", "type": "choice",
+              "options": ["Gas", "Dual fuel", "Electric"],
+              "flag": ["Gas", "Dual fuel"], "flagWhen": { "q": "gasPresent", "in": ["No"] },
+              "flagLabel": "Range cooker", "flagNote": "there is currently no gas in the room, a new supply is needed",
+              "when": { "q": "hobType", "in": ["Range cooker"] } },
+            { "id": "gasInPos", "label": "Is the gas supply in the right place for the new cooker?", "type": "choice",
+              "options": ["In position", "Needs moving"],
+              "flag": ["Needs moving"], "flagLabel": "Gas supply", "flagNote": "needs moving, Gas Safe engineer needed",
+              "when": [ { "q": "gasPresent", "in": ["Yes"] }, { "any": [ { "q": "hobType", "in": ["Gas"] }, { "q": "rangeFuel", "in": ["Gas", "Dual fuel"] } ] } ] },
             { "id": "gasCap", "label": "Gas to be capped off?", "type": "yesno",
               "hint": "Gas Safe engineer needed", "flag": ["Yes"],
-              "when": { "q": "hobType", "in": ["Induction", "Ceramic"] } },
+              "when": [ { "q": "gasPresent", "in": ["Yes"] },
+                        { "any": [ { "q": "hobType", "in": ["Induction", "Ceramic"] }, { "q": "rangeFuel", "in": ["Electric"] } ] } ] },
             { "id": "oven", "label": "Oven", "type": "choice",
               "options": ["Single", "Double", "Built under", "None"],
               "when": { "q": "hobType", "in": ["Gas", "Induction", "Ceramic"] } },
@@ -896,6 +907,9 @@ const CONFIG = {
   // look at the same copy (Door 2's hinge depends on Door 2's swing).
   function condMet(when, s, i){
     if (!when) return true;
+    // a list means every condition must match; { any: [...] } means at least one
+    if (Array.isArray(when)) return when.every(w => condMet(w, s, i));
+    if (when.any) return when.any.some(w => condMet(w, s, i));
     const t = Q[when.q];
     if (!t) return false;
     const ti = t.section === s.id ? i : 0;
