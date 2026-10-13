@@ -900,8 +900,10 @@ const CONFIG = {
         out.push(
           { id:q.id + '-who', label:'Who is doing the ' + q.askWho + '?', type:'choice',
             options:['Us', 'Customer', 'Split'], when:{ q:q.id, in:picked },
-            flag:['Customer', 'Split'], flagLabel:q.askWho.charAt(0).toUpperCase() + q.askWho.slice(1) + ' by',
-            flagNote:'agree timing with the customer so it is done when we need it',
+            flag:['Us', 'Customer', 'Split'], flagLabel:q.askWho.charAt(0).toUpperCase() + q.askWho.slice(1) + ' by',
+            flagNote:{ Us:'book the tradesmen in',
+                       Customer:'agree timing with the customer so it is done when we need it',
+                       Split:'book our tradesmen in and agree timing with the customer' },
             flagDetail:{ Split:q.id + '-whoSplit' } },
           { id:q.id + '-whoSplit', label:'What is the customer doing?', type:'text',
             when:{ q:q.id + '-who', in:['Split'] } });
