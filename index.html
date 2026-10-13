@@ -106,10 +106,6 @@ const CONFIG = {
             { "id": "ceilingDropNote", "label": "What is it and where?", "type": "text",
               "hint": "e.g. slopes down over the back wall to about 2100mm",
               "when": { "q": "ceilingDrop", "in": ["Yes"] } },
-            { "id": "roomCeilNotes", "label": "Room & ceiling notes", "type": "note",
-              "hint": "Leave blank if nothing stands out" },
-            { "id": "wallNotes", "label": "Wall notes", "type": "note",
-              "hint": "e.g. badly out of square, damp, cracks, hollow plaster. Leave blank if nothing." },
             { "id": "floorType", "label": "Floor construction", "type": "choice",
               "options": ["Concrete", "Timber", "Both", "Unsure"] },
             { "id": "floorBoth", "label": "Which part is which?", "type": "text",
@@ -133,6 +129,10 @@ const CONFIG = {
               "flag": ["To the old units", "Unsure"], "flagNote": "new units may not line up with the old floor edge",
               "flagLabel": "Current floor runs",
               "when": { "q": "keepFloor", "in": ["Yes"] } },
+            { "id": "roomCeilNotes", "label": "Room & ceiling notes", "type": "note",
+              "hint": "Leave blank if nothing stands out" },
+            { "id": "wallNotes", "label": "Wall notes", "type": "note",
+              "hint": "e.g. badly out of square, damp, cracks, hollow plaster. Leave blank if nothing." },
             { "id": "floorNotes", "label": "Floor notes", "type": "note",
               "hint": "e.g. uneven, soft spots, damp. Leave blank if nothing." }
           ]
