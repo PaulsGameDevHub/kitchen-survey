@@ -540,12 +540,16 @@ const CONFIG = {
   .q-label{font-weight:500;}
   .q-hint{font-size:12px;color:var(--ink-soft);font-style:italic;margin-top:1px;}
   .note-btn{
-    flex:0 0 auto;background:none;border:none;cursor:pointer;padding:2px 0;
-    font-family:var(--font-mono);font-size:11px;letter-spacing:.06em;color:var(--ink-soft);
-    text-transform:uppercase;white-space:nowrap;
+    flex:0 0 auto;cursor:pointer;
+    display:inline-flex;align-items:center;gap:5px;
+    background:#fff;border:1px solid var(--line-strong);border-radius:999px;
+    padding:4px 10px 4px 8px;min-height:28px;
+    font-family:var(--font-display);font-weight:600;font-size:12px;color:var(--ink);
+    white-space:nowrap;transition:all .12s;
   }
-  .note-btn:hover{color:var(--ink);}
-  .note-btn.has{color:var(--accent);}
+  .note-btn svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;}
+  .note-btn:hover{border-color:var(--ink);}
+  .note-btn.has{background:var(--accent-wash);border-color:var(--accent);color:var(--accent-deep);}
   .q-note{display:none;margin-top:9px;}
   .q-note.open{display:block;}
 
@@ -553,7 +557,9 @@ const CONFIG = {
   .num-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));column-gap:16px;border-bottom:1px solid var(--line);}
   .num-grid .q{border-bottom:none;padding:12px 2px;display:flex;flex-direction:column;}
   .num-grid .num{margin-top:auto;}
-  .num .note-btn{margin-left:4px;}
+  .num .note-btn{margin-left:4px;padding:4px 8px;}
+  .num .note-btn .lbl{display:none;}
+  .num .note-btn.has::after{content:'✓';}
   .num-grid .q-head{margin-bottom:6px;gap:6px;}
   .num-grid .q-label{font-size:14px;}
   .num-grid .q.sub{border-left:none;padding-left:2px;}
@@ -835,6 +841,8 @@ const CONFIG = {
   const svgTick = '<svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>';
   const svgChev = '<svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>';
   const STORE = 'kitchen-survey-draft';
+  const svgPen = '<svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16zM14 6l4 4"/></svg>';
+  const noteLabel = has => svgPen + '<span class="lbl">' + (has ? 'Note ✓' : 'Add note') + '</span>';
 
   // Flat lookups over the config
   const Q = {}, SEC = {}, PART = {}, ALLSEC = [];
@@ -935,7 +943,7 @@ const CONFIG = {
     const k = key(q, i);
     const note = state.notes[k] || '';
     const canNote = q.type !== 'note';
-    const noteBtn = '<button type="button" class="note-btn'+(note ? ' has' : '')+'" data-note="'+k+'">'+(note ? 'Note ✓' : '+ Note')+'</button>';
+    const noteBtn = '<button type="button" class="note-btn'+(note ? ' has' : '')+'" data-note="'+k+'">'+noteLabel(note)+'</button>';
     return '<div class="q'+(q.when ? ' sub' : '')+'" id="q-'+k+'">' +
       '<div class="q-head"><div><div class="q-label">'+esc(q.label)+'</div>' +
       (q.hint ? '<div class="q-hint">'+esc(q.hint)+'</div>' : '') + '</div>' +
@@ -1239,7 +1247,7 @@ const CONFIG = {
       state.notes[t.dataset.notefor] = t.value;
       const btn = $('q-' + t.dataset.notefor).querySelector('.note-btn');
       btn.classList.toggle('has', !!t.value.trim());
-      btn.textContent = t.value.trim() ? 'Note ✓' : '+ Note';
+      btn.innerHTML = noteLabel(t.value.trim());
       save();
     }
   });
