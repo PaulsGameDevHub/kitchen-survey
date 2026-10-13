@@ -100,11 +100,7 @@ const CONFIG = {
             { "id": "roomL", "label": "Room length", "type": "number", "unit": "mm" },
             { "id": "roomW", "label": "Room width", "type": "number", "unit": "mm" },
             { "id": "ceilH", "label": "Ceiling height", "type": "number", "unit": "mm" },
-            { "id": "bulkhead", "label": "Bulkhead or ceiling drop?", "type": "yesno" },
-            { "id": "bulkD", "label": "Bulkhead depth", "type": "number", "unit": "mm",
-              "when": { "q": "bulkhead", "in": ["Yes"] } },
-            { "id": "bulkH", "label": "Floor to underside of bulkhead", "type": "number", "unit": "mm",
-              "when": { "q": "bulkhead", "in": ["Yes"] } },
+            { "id": "ceilingDrop", "label": "Is there a sloped or lower section of ceiling?", "type": "yesno" },
             { "id": "walls", "label": "Are the walls square and plumb?", "type": "choice",
               "options": ["Good", "Slightly out", "Badly out"], "flag": ["Badly out"] },
             { "id": "floorType", "label": "Floor construction", "type": "choice",
@@ -223,7 +219,7 @@ const CONFIG = {
             { "id": "radH", "label": "Radiator height", "type": "number", "unit": "mm",
               "when": { "q": "radiator", "in": ["Staying", "Moving"] } },
             { "id": "obstacles", "label": "Obstacles to work around", "type": "checks",
-              "options": ["Soil stack", "Boxing", "Chimney breast", "Meter", "Pipes on wall", "Sloping ceiling", "Beam"] }
+              "options": ["Soil stack", "Boxing", "Chimney breast", "Meter", "Pipes on wall", "Beam"] }
           ]
         },
         {
