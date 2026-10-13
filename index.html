@@ -29,6 +29,11 @@
        "flag"  answers that go on the follow-up list, e.g. "flag": ["No"]
        "flagAbove"  for numbers: flag anything bigger, e.g. "flagAbove": 600
        "flagNote"   a reason added to the follow-up list when it's flagged
+       "selects"    typing in this box picks an option on another question, e.g.
+                    "selects": { "q": "wtDepth", "value": "Other" }. Picking a
+                    different option there clears the box again.
+       "optional"   not counted towards progress
+       "flagLabel"  wording to use on the follow-up list instead of the label
 
      Optional on a section:
        "when"    hide the whole section until an answer matches
@@ -73,9 +78,10 @@ const CONFIG = {
               "options": ["600mm", "650mm", "Other"],
               "hint": "Deeper than 600mm can mean pipes hidden behind the units",
               "flag": ["650mm"], "flagNote": "deeper than standard, check for hidden pipes" },
-            { "id": "wtDepthOther", "label": "Measured depth", "type": "number", "unit": "mm",
+            { "id": "wtDepthOther", "label": "Or measured depth", "type": "number", "unit": "mm",
               "flagAbove": 600, "flagNote": "deeper than standard, check for hidden pipes",
-              "when": { "q": "wtDepth", "in": ["Other"] } },
+              "selects": { "q": "wtDepth", "value": "Other" }, "optional": true,
+              "flagLabel": "Worktop depth" },
             { "id": "wtMat", "label": "Worktop material", "type": "choice",
               "options": ["Laminate / wood", "Quartz / granite", "Other"],
               "hint": "Quartz and granite are heavy to lift out, so the installer may need a hand",
@@ -850,7 +856,7 @@ const CONFIG = {
 
   const opts = q => q.type === 'yesno' ? ['Yes','No'] : (q.options || []);
   const isSet = v => Array.isArray(v) ? v.length > 0 : (v !== undefined && v !== null && String(v).trim() !== '');
-  const counts = q => q.type !== 'note';
+  const counts = q => q.type !== 'note' && !q.optional;
 
   // Conditions point at another question; inside a repeated section they
   // look at the same copy (Door 2's hinge depends on Door 2's swing).
@@ -1079,7 +1085,7 @@ const CONFIG = {
     $('flagsHead').textContent = 'Follow up' + (flags.length ? ' (' + flags.length + ')' : '');
     $('flagList').innerHTML = flags.length
       ? flags.map(f => '<div class="flag-item" data-jump="'+key(f.q, f.i)+'" data-sec="'+f.s.id+'">' +
-          (f.s.repeat ? esc(instName(f.s, f.i)) + ': ' : '') + esc(f.q.label)+' <b>'+esc(f.vals.join(', '))+'</b>'+(f.q.flagNote ? ' · '+esc(f.q.flagNote) : '')+'</div>').join('')
+          (f.s.repeat ? esc(instName(f.s, f.i)) + ': ' : '') + esc(f.q.flagLabel || f.q.label)+' <b>'+esc(f.vals.join(', '))+'</b>'+(f.q.flagNote ? ' · '+esc(f.q.flagNote) : '')+'</div>').join('')
       : '<div class="flags-none">Nothing flagged yet.</div>';
 
     $('ref').textContent = new Date(state.started).toLocaleDateString('en-GB');
@@ -1165,6 +1171,15 @@ const CONFIG = {
       } else {
         // tapping the selected option again clears it
         state.answers[k] = state.answers[k] === val ? undefined : val;
+        // a box that "selects" this option is cleared when something else is picked
+        const { i } = KEY[k];
+        ALLSEC.forEach(s => s.questions.forEach(o => {
+          if (!o.selects || o.selects.q !== q.id || state.answers[k] === o.selects.value) return;
+          const ok = key(o, SEC[o.section] === SEC[q.section] ? i : 0);
+          delete state.answers[ok];
+          const inp = root.querySelector('[data-k="'+ok+'"]');
+          if (inp) inp.value = '';
+        }));
       }
       refresh();
       return;
@@ -1187,6 +1202,12 @@ const CONFIG = {
     const t = e.target;
     if (t.dataset.k){
       state.answers[t.dataset.k] = t.value;
+      // typing in a "selects" box picks the matching option, e.g. Other
+      const { q, i } = KEY[t.dataset.k];
+      if (q.selects && t.value.trim() && Q[q.selects.q]){
+        const tq = Q[q.selects.q];
+        state.answers[key(tq, tq.section === q.section ? i : 0)] = q.selects.value;
+      }
       refresh();
     } else if (t.dataset.notefor){
       state.notes[t.dataset.notefor] = t.value;
@@ -1286,7 +1307,7 @@ const CONFIG = {
     ALLSEC.forEach(s => { for (let i = 0; i < copies(s); i++) s.questions.forEach(q => {
       if (!visible(q, i)) return;
       const fv = flaggedVals(q, i);
-      if (fv.length) out.push((s.repeat ? instName(s, i) + ': ' : '') + q.label + ' — ' + fv.join(', ') + (q.flagNote ? ' (' + q.flagNote + ')' : ''));
+      if (fv.length) out.push((s.repeat ? instName(s, i) + ': ' : '') + (q.flagLabel || q.label) + ' — ' + fv.join(', ') + (q.flagNote ? ' (' + q.flagNote + ')' : ''));
     }); });
     return out;
   }
