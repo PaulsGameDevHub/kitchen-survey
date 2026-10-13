@@ -11,11 +11,14 @@
 <!-- ============================================================
      SURVEY QUESTIONS  —  edit this block to change the checklist.
 
-     Each section has a title and a list of questions. Question types:
+     The survey is split into parts, each part into sections, and
+     each section holds a list of questions. Question types:
        "choice"  slide-tab options (4 or fewer) or chips (5+), pick one
        "yesno"   a Yes / No slide tab
        "checks"  chips, tick as many as apply
-       "number"  a number box, with "unit" shown after it (mm, qty…)
+       "number"  a number box, with "unit" shown after it (mm, qty…).
+                 Number questions that sit next to each other are laid
+                 out side by side in a grid.
        "text"    a one-line text box
        "note"    a larger notes box (not counted towards progress)
 
@@ -24,182 +27,344 @@
        "when"  only show it after another answer, e.g.
                "when": { "q": "wasteSeen", "in": ["Yes"] }
        "flag"  answers that go on the follow-up list, e.g. "flag": ["No"]
-     A whole section can have a "when" too, and "photos": true adds an
-     "Add photo" button to it.
+
+     Optional on a section:
+       "when"    hide the whole section until an answer matches
+       "photos"  true adds an "Add photo" button
+       "repeat"  e.g. "Window" lets you add Window 1, Window 2, …
      ============================================================ -->
 <script>
 /* === SURVEY START === */
 const CONFIG = {
   "business": "Kitchen Survey",
   "brandline": "Site survey checklist",
-  "tagline": "Work down the list on site. Questions open up as you answer, and anything that needs a second look goes on the follow-up list.",
+  "tagline": "Part 1 measures up the room. Part 2 records what's going in. Anything that needs a second look goes on the follow-up list.",
   "autosave": true,
-  "sections": [
+  "parts": [
     {
       "id": "room",
-      "title": "The room",
-      "photos": true,
-      "questions": [
-        { "id": "status", "label": "What is in the room now?", "type": "choice",
-          "options": ["Kitchen installed", "Part stripped", "Empty room"] },
-        { "id": "stripout", "label": "Who is stripping out the old kitchen?", "type": "choice",
-          "options": ["Us", "Customer", "Other trade"],
-          "when": { "q": "status", "in": ["Kitchen installed", "Part stripped"] } },
-        { "id": "disposal", "label": "Waste removal", "type": "choice",
-          "options": ["Skip", "Van", "Customer"],
-          "when": { "q": "status", "in": ["Kitchen installed", "Part stripped"] } },
-        { "id": "roomL", "label": "Room length", "type": "number", "unit": "mm" },
-        { "id": "roomW", "label": "Room width", "type": "number", "unit": "mm" },
-        { "id": "ceilH", "label": "Ceiling height", "type": "number", "unit": "mm",
-          "hint": "Check for bulkheads or drops" },
-        { "id": "walls", "label": "Are the walls square and plumb?", "type": "choice",
-          "options": ["Good", "Slightly out", "Badly out"], "flag": ["Badly out"] },
-        { "id": "floorType", "label": "Floor construction", "type": "choice",
-          "options": ["Concrete", "Suspended timber", "Unsure"] },
-        { "id": "floorFinish", "label": "Current floor finish", "type": "choice",
-          "options": ["Tiles", "Vinyl / LVT", "Laminate / wood", "Bare"] },
-        { "id": "floorLevel", "label": "Is the floor level?", "type": "choice",
-          "options": ["Level", "Slight fall", "Needs levelling"], "flag": ["Needs levelling"] },
-        { "id": "newFloor", "label": "New floor goes down", "type": "choice",
-          "options": ["Before units", "After units", "No new floor"] },
-        { "id": "access", "label": "Access", "type": "checks",
-          "options": ["Ground floor", "Upstairs", "Tight stairs / turns", "Parking on drive", "Street parking only", "Permit needed"] }
+      "title": "Room survey",
+      "sub": "Measurements, services & access",
+      "sections": [
+        {
+          "id": "now",
+          "title": "The room now",
+          "photos": true,
+          "questions": [
+            { "id": "status", "label": "What is in the room now?", "type": "choice",
+              "options": ["Kitchen installed", "Part stripped", "Empty room"] },
+            { "id": "stripout", "label": "Who is stripping out the old kitchen?", "type": "choice",
+              "options": ["Us", "Customer", "Other trade"],
+              "when": { "q": "status", "in": ["Kitchen installed", "Part stripped"] } },
+            { "id": "disposal", "label": "Waste removal", "type": "choice",
+              "options": ["Skip", "Van", "Customer"],
+              "when": { "q": "status", "in": ["Kitchen installed", "Part stripped"] } }
+          ]
+        },
+        {
+          "id": "existing",
+          "title": "Existing kitchen",
+          "photos": true,
+          "when": { "q": "status", "in": ["Kitchen installed", "Part stripped"] },
+          "questions": [
+            { "id": "wtDepth", "label": "Worktop depth", "type": "number", "unit": "mm", "hint": "Standard is 600mm" },
+            { "id": "wtHeight", "label": "Worktop height", "type": "number", "unit": "mm" },
+            { "id": "plinth", "label": "Plinth height", "type": "number", "unit": "mm" },
+            { "id": "wtThick", "label": "Worktop thickness", "type": "choice",
+              "options": ["22mm", "28mm", "38mm", "40mm+"] },
+            { "id": "wtMat", "label": "Current worktop", "type": "choice",
+              "options": ["Laminate", "Solid wood", "Stone / quartz", "Other"] },
+            { "id": "wallUnits", "label": "Wall units fitted?", "type": "yesno" },
+            { "id": "wallUnitH", "label": "Floor to underside of wall units", "type": "number", "unit": "mm",
+              "when": { "q": "wallUnits", "in": ["Yes"] } },
+            { "id": "tiles", "label": "Tiled splashback coming off?", "type": "yesno",
+              "hint": "Expect plaster damage behind tiles" }
+          ]
+        },
+        {
+          "id": "measure",
+          "title": "Room measurements",
+          "photos": true,
+          "questions": [
+            { "id": "roomL", "label": "Room length", "type": "number", "unit": "mm" },
+            { "id": "roomW", "label": "Room width", "type": "number", "unit": "mm" },
+            { "id": "ceilH", "label": "Ceiling height", "type": "number", "unit": "mm" },
+            { "id": "bulkhead", "label": "Bulkhead or ceiling drop?", "type": "yesno" },
+            { "id": "bulkD", "label": "Bulkhead depth", "type": "number", "unit": "mm",
+              "when": { "q": "bulkhead", "in": ["Yes"] } },
+            { "id": "bulkH", "label": "Floor to underside of bulkhead", "type": "number", "unit": "mm",
+              "when": { "q": "bulkhead", "in": ["Yes"] } },
+            { "id": "walls", "label": "Are the walls square and plumb?", "type": "choice",
+              "options": ["Good", "Slightly out", "Badly out"], "flag": ["Badly out"] },
+            { "id": "floorType", "label": "Floor construction", "type": "choice",
+              "options": ["Concrete", "Suspended timber", "Unsure"] },
+            { "id": "floorFinish", "label": "Current floor finish", "type": "choice",
+              "options": ["Tiles", "Vinyl / LVT", "Laminate / wood", "Bare"] },
+            { "id": "floorLevel", "label": "Is the floor level?", "type": "choice",
+              "options": ["Level", "Slight fall", "Needs levelling"], "flag": ["Needs levelling"] }
+          ]
+        },
+        {
+          "id": "windows",
+          "title": "Windows",
+          "repeat": "Window",
+          "photos": true,
+          "questions": [
+            { "id": "winW", "label": "Width", "type": "number", "unit": "mm" },
+            { "id": "winH", "label": "Height", "type": "number", "unit": "mm" },
+            { "id": "winSill", "label": "Floor to sill", "type": "number", "unit": "mm",
+              "hint": "Must clear worktop and upstand" },
+            { "id": "winCorner", "label": "Distance from corner", "type": "number", "unit": "mm" },
+            { "id": "winReveal", "label": "Reveal depth", "type": "number", "unit": "mm" },
+            { "id": "winOpen", "label": "Opening type", "type": "choice",
+              "options": ["Side hung", "Top hung", "Sash", "Fixed"],
+              "hint": "Check the opener clears the tap" }
+          ]
+        },
+        {
+          "id": "doors",
+          "title": "Doors",
+          "repeat": "Door",
+          "photos": true,
+          "questions": [
+            { "id": "doorW", "label": "Width over architrave", "type": "number", "unit": "mm" },
+            { "id": "doorH", "label": "Height", "type": "number", "unit": "mm" },
+            { "id": "doorCorner", "label": "Architrave to corner", "type": "number", "unit": "mm" },
+            { "id": "doorSwing", "label": "Door opens", "type": "choice",
+              "options": ["Into kitchen", "Out of kitchen", "Open doorway"] },
+            { "id": "doorHinge", "label": "Hinge side (from inside the kitchen)", "type": "choice",
+              "options": ["Left", "Right"],
+              "when": { "q": "doorSwing", "in": ["Into kitchen", "Out of kitchen"] } }
+          ]
+        },
+        {
+          "id": "plumbing",
+          "title": "Water & waste",
+          "photos": true,
+          "questions": [
+            { "id": "sinkPos", "label": "Sink position", "type": "choice",
+              "options": ["Staying", "Moving"] },
+            { "id": "wasteSeen", "label": "Can you see the waste pipe exit?", "type": "yesno",
+              "flag": ["No"] },
+            { "id": "wasteWhere", "label": "Where does the waste exit?", "type": "choice",
+              "options": ["Through wall", "Through floor", "Into boxing"],
+              "when": { "q": "wasteSeen", "in": ["Yes"] } },
+            { "id": "wasteSize", "label": "Waste pipe size", "type": "choice",
+              "options": ["32mm", "40mm", "50mm", "Unsure"],
+              "when": { "q": "wasteSeen", "in": ["Yes"] } },
+            { "id": "wasteHeight", "label": "Waste exit height from floor", "type": "number", "unit": "mm",
+              "when": { "q": "wasteSeen", "in": ["Yes"] } },
+            { "id": "wasteCorner", "label": "Waste exit from corner", "type": "number", "unit": "mm",
+              "when": { "q": "wasteSeen", "in": ["Yes"] } },
+            { "id": "wasteFall", "label": "Enough fall to the new sink position?", "type": "choice",
+              "options": ["Yes", "Tight", "No"], "flag": ["Tight", "No"],
+              "when": { "q": "sinkPos", "in": ["Moving"] } },
+            { "id": "pipesSeen", "label": "Can you see where the water pipes enter the room?", "type": "yesno",
+              "flag": ["No"] },
+            { "id": "pipesWhere", "label": "Where do they come in?", "type": "choice",
+              "options": ["Through floor", "Through wall", "From ceiling"],
+              "when": { "q": "pipesSeen", "in": ["Yes"] } },
+            { "id": "pipeMat", "label": "Supply pipe material", "type": "choice",
+              "options": ["Copper", "Plastic", "Lead", "Mixed"], "flag": ["Lead"] },
+            { "id": "stopcock", "label": "Stopcock found?", "type": "yesno", "flag": ["No"] },
+            { "id": "stopcockWhere", "label": "Stopcock location", "type": "text",
+              "when": { "q": "stopcock", "in": ["Yes"] } },
+            { "id": "stopcockWorks", "label": "Does the stopcock turn off?", "type": "choice",
+              "options": ["Yes", "Stiff", "Not tested"], "flag": ["Stiff"],
+              "when": { "q": "stopcock", "in": ["Yes"] } },
+            { "id": "isoValves", "label": "Isolation valves under the sink?", "type": "yesno" },
+            { "id": "boiler", "label": "Boiler in the kitchen?", "type": "yesno" },
+            { "id": "boilerWhere", "label": "Boiler make, position and clearances", "type": "text",
+              "hint": "Check the manual for side and front clearances",
+              "when": { "q": "boiler", "in": ["Yes"] } }
+          ]
+        },
+        {
+          "id": "services",
+          "title": "Gas & electrics",
+          "photos": true,
+          "questions": [
+            { "id": "gasPresent", "label": "Gas supply in the room?", "type": "yesno" },
+            { "id": "gasPos", "label": "Gas supply position", "type": "text",
+              "when": { "q": "gasPresent", "in": ["Yes"] } },
+            { "id": "cookerCct", "label": "Dedicated cooker circuit?", "type": "choice",
+              "options": ["Yes", "No", "Unsure"], "flag": ["No", "Unsure"] },
+            { "id": "cookerRating", "label": "Cooker circuit rating", "type": "choice",
+              "options": ["32A", "40A", "45A", "Unsure"],
+              "when": { "q": "cookerCct", "in": ["Yes"] } },
+            { "id": "cuLoc", "label": "Consumer unit location", "type": "text" },
+            { "id": "rcd", "label": "RCD protected?", "type": "choice",
+              "options": ["Yes", "No", "Unsure"], "flag": ["No"] },
+            { "id": "cuAge", "label": "Consumer unit condition", "type": "choice",
+              "options": ["Modern", "Older", "Rewireable fuses"], "flag": ["Rewireable fuses"] },
+            { "id": "sockets", "label": "Double sockets now", "type": "number", "unit": "qty" }
+          ]
+        },
+        {
+          "id": "obstacles",
+          "title": "Heating & obstacles",
+          "photos": true,
+          "questions": [
+            { "id": "radiator", "label": "Radiator", "type": "choice",
+              "options": ["None", "Staying", "Moving", "Plinth heater"] },
+            { "id": "radW", "label": "Radiator width", "type": "number", "unit": "mm",
+              "when": { "q": "radiator", "in": ["Staying", "Moving"] } },
+            { "id": "radH", "label": "Radiator height", "type": "number", "unit": "mm",
+              "when": { "q": "radiator", "in": ["Staying", "Moving"] } },
+            { "id": "obstacles", "label": "Obstacles to work around", "type": "checks",
+              "options": ["Soil stack", "Boxing", "Chimney breast", "Meter", "Pipes on wall", "Sloping ceiling", "Beam"] }
+          ]
+        },
+        {
+          "id": "access",
+          "title": "Access & storage",
+          "photos": true,
+          "questions": [
+            { "id": "kitchenFloor", "label": "Kitchen is on the", "type": "choice",
+              "options": ["Ground floor", "Upper floor"] },
+            { "id": "route", "label": "Route in for units and worktops", "type": "checks",
+              "options": ["Clear", "Narrow hallway", "Tight stairs / turns", "Steps outside", "Through house only"],
+              "flag": ["Tight stairs / turns"] },
+            { "id": "parking", "label": "Parking", "type": "choice",
+              "options": ["Drive", "Street", "Permit needed"], "flag": ["Permit needed"] },
+            { "id": "storage", "label": "Where is the new kitchen stored on delivery?", "type": "choice",
+              "options": ["Garage", "Spare room", "Outbuilding", "Not sorted"], "flag": ["Not sorted"] },
+            { "id": "storageNote", "label": "Storage details", "type": "text",
+              "hint": "Dry? Lockable? Room for the longest worktop?" },
+            { "id": "skipSpot", "label": "Skip location", "type": "choice",
+              "options": ["Drive", "Road (permit)", "Not needed"],
+              "when": { "q": "disposal", "in": ["Skip"] } }
+          ]
+        }
       ]
     },
     {
-      "id": "existing",
-      "title": "Existing kitchen",
-      "photos": true,
-      "when": { "q": "status", "in": ["Kitchen installed", "Part stripped"] },
-      "questions": [
-        { "id": "wtMat", "label": "Current worktop", "type": "choice",
-          "options": ["Laminate", "Solid wood", "Stone / quartz", "Other"] },
-        { "id": "wtDepth", "label": "Worktop depth", "type": "number", "unit": "mm",
-          "hint": "Standard is 600mm" },
-        { "id": "wtThick", "label": "Worktop thickness", "type": "choice",
-          "options": ["22mm", "28mm", "38mm", "40mm+"] },
-        { "id": "wtHeight", "label": "Worktop height from floor", "type": "number", "unit": "mm" },
-        { "id": "plinth", "label": "Plinth height", "type": "number", "unit": "mm" },
-        { "id": "wallUnits", "label": "Wall units fitted?", "type": "yesno" },
-        { "id": "wallUnitH", "label": "Floor to underside of wall units", "type": "number", "unit": "mm",
-          "when": { "q": "wallUnits", "in": ["Yes"] } },
-        { "id": "tiles", "label": "Tiled splashback coming off?", "type": "yesno",
-          "hint": "Expect plaster damage behind tiles" },
-        { "id": "keepApps", "label": "Appliances being reused", "type": "checks",
-          "options": ["Oven", "Hob", "Hood", "Fridge freezer", "Dishwasher", "Washing machine", "None"] }
-      ]
-    },
-    {
-      "id": "plumbing",
-      "title": "Water & waste",
-      "photos": true,
-      "questions": [
-        { "id": "sinkPos", "label": "Sink position", "type": "choice",
-          "options": ["Staying", "Moving"] },
-        { "id": "wasteSeen", "label": "Can you see the waste pipe exit?", "type": "yesno",
-          "flag": ["No"] },
-        { "id": "wasteWhere", "label": "Where does the waste exit?", "type": "choice",
-          "options": ["Through wall", "Through floor", "Into boxing"],
-          "when": { "q": "wasteSeen", "in": ["Yes"] } },
-        { "id": "wasteSize", "label": "Waste pipe size", "type": "choice",
-          "options": ["32mm", "40mm", "50mm", "Unsure"],
-          "when": { "q": "wasteSeen", "in": ["Yes"] } },
-        { "id": "wasteHeight", "label": "Height of waste exit from floor", "type": "number", "unit": "mm",
-          "when": { "q": "wasteSeen", "in": ["Yes"] } },
-        { "id": "wasteFall", "label": "Enough fall to the new sink position?", "type": "choice",
-          "options": ["Yes", "Tight", "No"], "flag": ["Tight", "No"],
-          "when": { "q": "sinkPos", "in": ["Moving"] } },
-        { "id": "pipesSeen", "label": "Can you see where the water pipes enter the room?", "type": "yesno",
-          "flag": ["No"] },
-        { "id": "pipesWhere", "label": "Where do they come in?", "type": "choice",
-          "options": ["Through floor", "Through wall", "From ceiling"],
-          "when": { "q": "pipesSeen", "in": ["Yes"] } },
-        { "id": "pipeMat", "label": "Supply pipe material", "type": "choice",
-          "options": ["Copper", "Plastic", "Lead", "Mixed"], "flag": ["Lead"] },
-        { "id": "stopcock", "label": "Stopcock found?", "type": "yesno", "flag": ["No"] },
-        { "id": "stopcockWhere", "label": "Stopcock location", "type": "text",
-          "when": { "q": "stopcock", "in": ["Yes"] } },
-        { "id": "stopcockWorks", "label": "Does the stopcock turn off?", "type": "choice",
-          "options": ["Yes", "Stiff", "Not tested"], "flag": ["Stiff"],
-          "when": { "q": "stopcock", "in": ["Yes"] } },
-        { "id": "isoValves", "label": "Isolation valves under the sink?", "type": "yesno" },
-        { "id": "appFeeds", "label": "Appliance feeds needed", "type": "checks",
-          "options": ["Dishwasher", "Washing machine", "Fridge water", "Boiling tap", "Water softener"] },
-        { "id": "boiler", "label": "Boiler in the kitchen?", "type": "yesno" },
-        { "id": "boilerWhere", "label": "Boiler make, position and clearances", "type": "text",
-          "hint": "Check the manual for side and front clearances",
-          "when": { "q": "boiler", "in": ["Yes"] } },
-        { "id": "boilerBox", "label": "Boiler to be boxed in a housing unit?", "type": "yesno",
-          "when": { "q": "boiler", "in": ["Yes"] } }
-      ]
-    },
-    {
-      "id": "cooking",
-      "title": "Cooking & extraction",
-      "photos": true,
-      "questions": [
-        { "id": "hobType", "label": "New hob type", "type": "choice",
-          "options": ["Gas", "Induction", "Ceramic", "Range cooker"] },
-        { "id": "gasPresent", "label": "Is there a gas supply in the room?", "type": "yesno" },
-        { "id": "gasPos", "label": "Gas supply position", "type": "text",
-          "when": { "q": "gasPresent", "in": ["Yes"] } },
-        { "id": "gasCap", "label": "Gas to be capped off?", "type": "yesno",
-          "hint": "Gas Safe engineer needed", "flag": ["Yes"],
-          "when": { "q": "gasPresent", "in": ["Yes"] } },
-        { "id": "cookerCct", "label": "Dedicated cooker circuit?", "type": "choice",
-          "options": ["Yes", "No", "Unsure"], "flag": ["No", "Unsure"] },
-        { "id": "cookerRating", "label": "Cooker circuit rating", "type": "choice",
-          "options": ["32A", "40A", "45A", "Unsure"],
-          "when": { "q": "cookerCct", "in": ["Yes"] } },
-        { "id": "extract", "label": "Extraction", "type": "choice",
-          "options": ["Ducted out", "Recirculating", "None yet"] },
-        { "id": "ductRoute", "label": "Duct route to outside", "type": "text",
-          "hint": "Core drill needed? Distance and number of bends",
-          "when": { "q": "extract", "in": ["Ducted out"] } }
-      ]
-    },
-    {
-      "id": "electrics",
-      "title": "Electrics",
-      "photos": true,
-      "questions": [
-        { "id": "cuLoc", "label": "Consumer unit location", "type": "text" },
-        { "id": "rcd", "label": "RCD protected?", "type": "choice",
-          "options": ["Yes", "No", "Unsure"], "flag": ["No"] },
-        { "id": "cuAge", "label": "Consumer unit condition", "type": "choice",
-          "options": ["Modern", "Older", "Rewireable fuses"], "flag": ["Rewireable fuses"] },
-        { "id": "sockets", "label": "Double sockets in the room now", "type": "number", "unit": "qty" },
-        { "id": "lighting", "label": "Current lighting", "type": "choice",
-          "options": ["Pendant", "Spotlights", "Fluorescent", "Other"] },
-        { "id": "elecWork", "label": "Electrical work wanted", "type": "checks",
-          "options": ["Extra sockets", "Move sockets", "Spotlights", "Under-unit lights", "Plinth lights", "Appliance spurs", "USB sockets"] }
-      ]
-    },
-    {
-      "id": "features",
-      "title": "Windows, doors & obstacles",
-      "photos": true,
-      "questions": [
-        { "id": "winSill", "label": "Window sill height", "type": "number", "unit": "mm",
-          "hint": "Must clear the worktop and any upstand" },
-        { "id": "winW", "label": "Window width", "type": "number", "unit": "mm" },
-        { "id": "winCorner", "label": "Window distance from nearest corner", "type": "number", "unit": "mm" },
-        { "id": "doors", "label": "Doors into the room", "type": "number", "unit": "qty" },
-        { "id": "radiator", "label": "Radiator", "type": "choice",
-          "options": ["None", "Staying", "Moving", "Plinth heater"] },
-        { "id": "obstacles", "label": "Obstacles to work around", "type": "checks",
-          "options": ["Soil stack", "Boxing", "Chimney breast", "Meter", "Pipes on wall", "Sloping ceiling", "Beam"] }
-      ]
-    },
-    {
-      "id": "wrapup",
-      "title": "Wrap-up",
-      "photos": true,
-      "questions": [
-        { "id": "otherTrades", "label": "Other trades needed", "type": "checks",
-          "options": ["Plasterer", "Electrician", "Gas Safe", "Plumber", "Tiler", "Floor fitter", "Builder"] },
-        { "id": "wants", "label": "What the customer wants", "type": "note" },
-        { "id": "concerns", "label": "Concerns / things to check", "type": "note" }
+      "id": "new",
+      "title": "New kitchen",
+      "sub": "Style, worktops & appliances",
+      "sections": [
+        {
+          "id": "style",
+          "title": "Style",
+          "photos": true,
+          "questions": [
+            { "id": "doorStyle", "label": "Door style", "type": "choice",
+              "options": ["Shaker", "Slab", "In-frame", "Handleless"] },
+            { "id": "doorColour", "label": "Door colour / finish", "type": "text" },
+            { "id": "carcassColour", "label": "Carcass colour", "type": "text" },
+            { "id": "handles", "label": "Handles", "type": "choice",
+              "options": ["Bar", "Knob", "Cup", "J-pull", "Integrated grip", "None"],
+              "when": { "q": "doorStyle", "in": ["Shaker", "Slab", "In-frame"] } },
+            { "id": "supplier", "label": "Supplier / range", "type": "text" }
+          ]
+        },
+        {
+          "id": "layout",
+          "title": "Layout",
+          "photos": true,
+          "questions": [
+            { "id": "shape", "label": "Layout", "type": "choice",
+              "options": ["Single wall", "Galley", "L-shape", "U-shape", "Island", "Peninsula"] },
+            { "id": "newWallUnits", "label": "Wall units?", "type": "yesno" },
+            { "id": "newWallUnitH", "label": "Wall unit height", "type": "choice",
+              "options": ["720mm", "900mm", "Mixed"],
+              "when": { "q": "newWallUnits", "in": ["Yes"] } },
+            { "id": "tallUnits", "label": "Tall units?", "type": "yesno" },
+            { "id": "corner", "label": "Corner solution", "type": "choice",
+              "options": ["Blind corner", "Magic corner", "Corner drawers", "None"] },
+            { "id": "newPlinth", "label": "Plinth height", "type": "number", "unit": "mm" }
+          ]
+        },
+        {
+          "id": "worktops",
+          "title": "Worktops",
+          "photos": true,
+          "questions": [
+            { "id": "newWtMat", "label": "Material", "type": "choice",
+              "options": ["Laminate", "Solid wood", "Quartz", "Granite", "Compact laminate", "Other"] },
+            { "id": "newWtThick", "label": "Thickness", "type": "choice",
+              "options": ["12mm", "20mm", "30mm", "38/40mm"] },
+            { "id": "newWtDepth", "label": "Depth", "type": "number", "unit": "mm" },
+            { "id": "newWtColour", "label": "Colour / decor", "type": "text" },
+            { "id": "edge", "label": "Edge profile", "type": "choice",
+              "options": ["Square", "Pencil round", "Bullnose", "Other"] },
+            { "id": "templating", "label": "Templating needed?", "type": "yesno",
+              "when": { "q": "newWtMat", "in": ["Quartz", "Granite", "Compact laminate"] } },
+            { "id": "upstand", "label": "Upstand / splashback", "type": "choice",
+              "options": ["None", "Upstand", "Full height", "Tiled"] },
+            { "id": "hobSplash", "label": "Behind the hob", "type": "choice",
+              "options": ["Glass", "Matching worktop", "Tiles", "Nothing"] },
+            { "id": "sinkType", "label": "Sink", "type": "choice",
+              "options": ["Inset", "Undermount", "Belfast"] },
+            { "id": "drainer", "label": "Drainer grooves?", "type": "yesno",
+              "when": { "q": "sinkType", "in": ["Undermount", "Belfast"] } }
+          ]
+        },
+        {
+          "id": "appliances",
+          "title": "Appliances",
+          "photos": true,
+          "questions": [
+            { "id": "hobType", "label": "Hob", "type": "choice",
+              "options": ["Gas", "Induction", "Ceramic", "Range cooker"] },
+            { "id": "gasCap", "label": "Gas to be capped off?", "type": "yesno",
+              "hint": "Gas Safe engineer needed", "flag": ["Yes"],
+              "when": { "q": "hobType", "in": ["Induction", "Ceramic"] } },
+            { "id": "oven", "label": "Oven", "type": "choice",
+              "options": ["Single", "Double", "Built under", "None"],
+              "when": { "q": "hobType", "in": ["Gas", "Induction", "Ceramic"] } },
+            { "id": "ovenHousing", "label": "Oven position", "type": "choice",
+              "options": ["Under worktop", "Tall housing"],
+              "when": { "q": "oven", "in": ["Single", "Double"] } },
+            { "id": "extract", "label": "Extraction", "type": "choice",
+              "options": ["Ducted out", "Recirculating", "Hob extractor", "None"] },
+            { "id": "ductRoute", "label": "Duct route to outside", "type": "text",
+              "hint": "Core drill needed? Distance and number of bends",
+              "when": { "q": "extract", "in": ["Ducted out", "Hob extractor"] } },
+            { "id": "integrated", "label": "Integrated appliances", "type": "checks",
+              "options": ["Fridge freezer", "Dishwasher", "Washing machine", "Microwave", "Wine cooler"] },
+            { "id": "appFeeds", "label": "Water needed for", "type": "checks",
+              "options": ["Dishwasher", "Washing machine", "Fridge water", "Boiling tap", "Water softener"] },
+            { "id": "reusing", "label": "Old appliances being reused", "type": "checks",
+              "options": ["Oven", "Hob", "Hood", "Fridge freezer", "Dishwasher", "Washing machine"] }
+          ]
+        },
+        {
+          "id": "lighting",
+          "title": "Electrics & lighting",
+          "photos": false,
+          "questions": [
+            { "id": "elecWork", "label": "Electrical work wanted", "type": "checks",
+              "options": ["Extra sockets", "Move sockets", "USB sockets", "Appliance spurs"] },
+            { "id": "lights", "label": "Lighting wanted", "type": "checks",
+              "options": ["Spotlights", "Pendants", "Under-unit lights", "Plinth lights", "In-cupboard lights"] }
+          ]
+        },
+        {
+          "id": "finishing",
+          "title": "Floor & finishing",
+          "photos": false,
+          "questions": [
+            { "id": "newFloor", "label": "New floor goes down", "type": "choice",
+              "options": ["Before units", "After units", "No new floor"] },
+            { "id": "plaster", "label": "Plastering", "type": "checks",
+              "options": ["Patch repairs", "Skim walls", "Skim ceiling"] },
+            { "id": "tilingNew", "label": "Tiling", "type": "choice",
+              "options": ["None", "Splashback", "Walls", "Floor"] },
+            { "id": "otherTrades", "label": "Other trades needed", "type": "checks",
+              "options": ["Plasterer", "Electrician", "Gas Safe", "Plumber", "Tiler", "Floor fitter", "Builder"] }
+          ]
+        },
+        {
+          "id": "wrapup",
+          "title": "Notes",
+          "photos": true,
+          "questions": [
+            { "id": "wants", "label": "What the customer wants", "type": "note" },
+            { "id": "concerns", "label": "Concerns / things to check", "type": "note" },
+            { "id": "timescale", "label": "Timescale", "type": "text" }
+          ]
+        }
       ]
     }
   ]
@@ -243,7 +408,7 @@ const CONFIG = {
   }
   h1,h2,h3{font-family:var(--font-display);margin:0;letter-spacing:-.01em;}
   button{font:inherit;color:inherit;}
-  .seg button,.chip,.btn,.note-btn,.mbar button,.sec-link,.photo-add{touch-action:manipulation;}
+  button,.photo-add{touch-action:manipulation;}
 
   .wrap{max-width:1120px;margin:0 auto;padding:28px 20px 140px;}
 
@@ -251,7 +416,7 @@ const CONFIG = {
   header.top{
     border-bottom:2px solid var(--ink);
     padding-bottom:18px;
-    margin-bottom:26px;
+    margin-bottom:22px;
   }
   .brandline{
     font-family:var(--font-mono);
@@ -268,32 +433,85 @@ const CONFIG = {
   .grid{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:34px;align-items:start;}
   @media(max-width:860px){ .grid{grid-template-columns:minmax(0,1fr);gap:26px;} }
 
-  /* ---- Sections ---- */
-  .cat{margin-bottom:34px;scroll-margin-top:16px;}
-  .cat.hide{display:none;}
-  .cat > h2{
-    font-size:13px;
-    font-weight:700;
-    text-transform:uppercase;
-    letter-spacing:.14em;
-    color:var(--accent-deep);
-    padding-bottom:8px;
-    border-bottom:1px solid var(--line);
-    margin-bottom:4px;
-    display:flex;
-    justify-content:space-between;
-    align-items:baseline;
+  /* ---- Part switcher ---- */
+  .parts{
+    position:relative;display:grid;grid-template-columns:1fr 1fr;
+    background:var(--ink);border-radius:6px;padding:4px;margin-bottom:22px;
   }
-  .cat-count{font-family:var(--font-mono);font-size:11px;color:var(--ink-soft);letter-spacing:0;}
-  .cat-count.done{color:var(--accent);}
+  .parts .seg-pill{
+    position:absolute;top:4px;bottom:4px;left:4px;width:calc(50% - 4px);
+    background:var(--paper);border-radius:4px;
+    transform:translateX(calc(var(--i, 0) * 100%));
+    opacity:1;
+    transition:transform .25s cubic-bezier(.3,.7,.3,1);
+  }
+  .parts button{
+    position:relative;z-index:1;background:none;border:none;cursor:pointer;
+    padding:10px 12px;text-align:left;color:#9fb0ac;transition:color .2s;
+    display:flex;align-items:center;gap:12px;min-width:0;
+  }
+  .parts button.on{color:var(--ink);}
+  .parts .p-num{
+    flex:0 0 auto;width:30px;height:30px;border-radius:50%;
+    display:grid;place-items:center;font-family:var(--font-mono);font-weight:600;font-size:14px;
+    border:1.5px solid currentColor;
+  }
+  .parts button.on .p-num{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .parts .p-txt{min-width:0;}
+  .parts .p-title{display:block;font-family:var(--font-display);font-weight:700;font-size:16px;line-height:1.2;}
+  .parts .p-sub{display:block;font-family:var(--font-mono);font-size:11px;letter-spacing:.02em;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
-  .q{
-    padding:14px 6px;
-    border-bottom:1px solid var(--line);
+  /* ---- Section cards ---- */
+  .card{
+    background:var(--panel);border:1px solid var(--line);border-radius:6px;
+    margin-bottom:12px;scroll-margin-top:14px;overflow:hidden;
   }
+  .card.hide{display:none;}
+  .card-head{
+    width:100%;display:flex;align-items:center;gap:12px;
+    padding:14px 16px;background:none;border:none;cursor:pointer;text-align:left;
+  }
+  .card-head:hover .c-title{color:var(--accent-deep);}
+  .c-num{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);width:20px;flex:0 0 auto;}
+  .c-title{flex:1 1 auto;font-family:var(--font-display);font-weight:700;font-size:16px;}
+  .cat-count{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);white-space:nowrap;}
+  .cat-count.done{color:var(--accent);}
+  .cat-count .fl{color:var(--warn);margin-right:8px;}
+  .chev{width:18px;height:18px;stroke:var(--ink-soft);fill:none;stroke-width:2;transition:transform .2s;flex:0 0 auto;}
+  .card.open .chev{transform:rotate(180deg);}
+  .card-body{display:none;padding:0 16px 16px;border-top:1px solid var(--line);}
+  .card.open .card-body{display:block;}
+  .card.done:not(.open) .c-num{color:var(--accent);}
+
+  .card-foot{display:flex;justify-content:flex-end;margin-top:14px;}
+  .next-btn{
+    font-family:var(--font-display);font-weight:600;font-size:14px;
+    background:var(--ink);color:var(--paper);border:none;border-radius:var(--radius);
+    padding:10px 16px;cursor:pointer;
+  }
+  .next-btn:hover{background:var(--accent-deep);}
+
+  /* repeated groups (windows, doors) */
+  .inst{margin-top:14px;border:1px solid var(--line);border-radius:var(--radius);background:#fff;padding:0 12px 4px;}
+  .inst-head{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:10px 0 6px;border-bottom:1px solid var(--line);
+    font-family:var(--font-mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-deep);
+  }
+  .inst .q:last-child{border-bottom:none;}
+  .link-btn{background:none;border:none;cursor:pointer;font-family:var(--font-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);padding:2px 0;}
+  .link-btn:hover{color:var(--warn);}
+  .add-inst{
+    margin-top:10px;width:100%;padding:11px;border:1.5px dashed var(--line-strong);border-radius:var(--radius);
+    background:none;cursor:pointer;font-family:var(--font-display);font-weight:600;font-size:14px;color:var(--ink-soft);
+  }
+  .add-inst:hover{border-color:var(--accent);color:var(--accent-deep);}
+
+  /* questions */
+  .q{padding:14px 2px;border-bottom:1px solid var(--line);}
   .q.hide{display:none;}
-  .q.sub{border-left:3px solid var(--accent-wash);padding-left:14px;margin-left:4px;}
-  .q.flagged{background:var(--warn-wash);border-radius:var(--radius);border-bottom-color:transparent;}
+  .q.sub{border-left:3px solid var(--accent-wash);padding-left:12px;}
+  .q.flagged{background:var(--warn-wash);border-radius:var(--radius);border-bottom-color:transparent;padding-left:10px;padding-right:10px;}
   .q-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:9px;}
   .q-label{font-weight:500;}
   .q-hint{font-size:12px;color:var(--ink-soft);font-style:italic;margin-top:1px;}
@@ -306,6 +524,17 @@ const CONFIG = {
   .note-btn.has{color:var(--accent);}
   .q-note{display:none;margin-top:9px;}
   .q-note.open{display:block;}
+
+  /* measurement grid: runs of number questions sit side by side */
+  .num-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));column-gap:16px;border-bottom:1px solid var(--line);}
+  .num-grid .q{border-bottom:none;padding:12px 2px;display:flex;flex-direction:column;}
+  .num-grid .num{margin-top:auto;}
+  .num .note-btn{margin-left:4px;}
+  .num-grid .q-head{margin-bottom:6px;gap:6px;}
+  .num-grid .q-label{font-size:14px;}
+  .num-grid .q.sub{border-left:none;padding-left:2px;}
+  .num-grid .q.sub .q-label::before{content:'↳ ';color:var(--accent);}
+  .inst .num-grid:last-child{border-bottom:none;}
 
   /* slide tabs */
   .seg{
@@ -345,7 +574,7 @@ const CONFIG = {
   .chips{display:flex;flex-wrap:wrap;gap:7px;}
   .chip{
     display:inline-flex;align-items:center;gap:7px;
-    border:1px solid var(--line-strong);background:var(--panel);
+    border:1px solid var(--line-strong);background:#fff;
     border-radius:999px;padding:7px 13px;cursor:pointer;
     font-size:14px;line-height:1.2;transition:all .12s;
   }
@@ -358,32 +587,32 @@ const CONFIG = {
   .chip.on{background:var(--accent-wash);border-color:var(--accent);color:var(--accent-deep);}
   .chip.on .tk{background:var(--accent);border-color:var(--accent);}
   .chip.on .tk svg{opacity:1;}
+  .chips[data-single] .chip.on{background:var(--accent);color:#fff;}
   .chip.on.warn{background:var(--warn-wash);border-color:var(--warn);color:var(--warn);}
   .chip.on.warn .tk{background:var(--warn);border-color:var(--warn);}
 
   /* text and number boxes. Everything at 16px: iOS zooms the page on smaller inputs. */
   .num{display:flex;align-items:center;gap:8px;}
-  .num input{width:140px;font-family:var(--font-mono);}
   .num .unit{font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);letter-spacing:.04em;}
   .q input[type=text],.q input[type=number],.q textarea,.field input,.field textarea{
     width:100%;border:1px solid var(--line-strong);border-radius:var(--radius);
     padding:8px 10px;font-family:var(--font-body);font-size:16px;background:#fff;color:var(--ink);
   }
-  .q .num input{width:140px;font-family:var(--font-mono);}
+  .q .num input{flex:1 1 auto;min-width:0;max-width:150px;font-family:var(--font-mono);}
   .q textarea,.field textarea{resize:vertical;min-height:70px;}
   .q input:focus,.q textarea:focus,.field input:focus,.field textarea:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:var(--accent);}
 
   /* photos */
-  .photos{padding:14px 6px 4px;}
+  .photos{padding:14px 0 0;}
   .photo-grid{display:flex;flex-wrap:wrap;gap:8px;}
-  .photo{position:relative;width:96px;height:96px;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line-strong);background:var(--panel-2);}
+  .photo{position:relative;width:88px;height:88px;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line-strong);background:var(--panel-2);}
   .photo img{width:100%;height:100%;object-fit:cover;display:block;}
   .photo button{
     position:absolute;top:4px;right:4px;width:24px;height:24px;border-radius:50%;
     border:none;background:rgba(28,36,34,.75);color:#fff;cursor:pointer;font-size:14px;line-height:1;
   }
   .photo-add{
-    width:96px;height:96px;border:1.5px dashed var(--line-strong);border-radius:var(--radius);
+    width:88px;height:88px;border:1.5px dashed var(--line-strong);border-radius:var(--radius);
     display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
     cursor:pointer;color:var(--ink-soft);font-size:12px;background:transparent;
   }
@@ -410,15 +639,19 @@ const CONFIG = {
   .slip .ref{font-family:var(--font-mono);font-size:11px;color:#9fb0ac;}
   .slip-body{padding:16px 18px;}
 
-  .prog{display:flex;justify-content:space-between;align-items:baseline;}
-  .prog .lbl{font-family:var(--font-display);font-weight:700;text-transform:uppercase;letter-spacing:.08em;font-size:13px;}
-  .prog .amt{font-family:var(--font-mono);font-weight:600;font-size:26px;color:var(--accent-deep);font-variant-numeric:tabular-nums;}
-  .bar{height:6px;background:var(--panel-2);border-radius:3px;overflow:hidden;margin:8px 0 14px;}
+  .part-prog{margin-bottom:12px;cursor:pointer;}
+  .part-prog .row{display:flex;justify-content:space-between;align-items:baseline;gap:10px;}
+  .part-prog .lbl{font-family:var(--font-display);font-weight:700;font-size:14px;}
+  .part-prog .lbl small{font-family:var(--font-mono);font-weight:500;font-size:11px;color:var(--ink-soft);margin-right:6px;}
+  .part-prog .amt{font-family:var(--font-mono);font-weight:600;font-size:18px;color:var(--accent-deep);font-variant-numeric:tabular-nums;}
+  .part-prog.cur .lbl{color:var(--accent-deep);}
+  .bar{height:6px;background:var(--panel-2);border-radius:3px;overflow:hidden;margin-top:5px;}
   .bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .3s;}
 
+  .sec-list{margin-top:4px;padding-top:6px;border-top:1px solid var(--line);}
   .sec-link{
     display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;
-    padding:8px 0;border:none;border-bottom:1px dashed var(--line);background:none;cursor:pointer;
+    padding:7px 0;border:none;border-bottom:1px dashed var(--line);background:none;cursor:pointer;
     font-size:14px;text-align:left;
   }
   .sec-link:last-child{border-bottom:none;}
@@ -429,7 +662,7 @@ const CONFIG = {
   .flags{margin-top:16px;padding-top:14px;border-top:2px solid var(--ink);}
   .flags h3,.details h3{font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:var(--ink-soft);margin-bottom:8px;font-weight:600;}
   .flags h3{color:var(--warn);}
-  .flag-item{font-size:13px;padding:6px 0 6px 12px;border-left:3px solid var(--warn);margin-bottom:6px;background:var(--warn-wash);border-radius:0 var(--radius) var(--radius) 0;cursor:pointer;}
+  .flag-item{font-size:13px;padding:6px 8px 6px 12px;border-left:3px solid var(--warn);margin-bottom:6px;background:var(--warn-wash);border-radius:0 var(--radius) var(--radius) 0;cursor:pointer;}
   .flag-item b{font-weight:600;}
   .flags-none{font-size:13px;color:var(--ink-soft);}
 
@@ -471,6 +704,12 @@ const CONFIG = {
   @media(max-width:420px){
     .wrap{padding:22px 16px 120px;}
     .seg button{font-size:13px;padding:9px 3px;}
+    .card-head{padding:13px 12px;}
+    .card-body{padding:0 12px 14px;}
+    .parts button{padding:8px;gap:8px;}
+    .parts .p-num{width:26px;height:26px;font-size:13px;}
+    .parts .p-title{font-size:15px;}
+    .num-grid{grid-template-columns:1fr 1fr;}
   }
 
   /* toast */
@@ -485,9 +724,11 @@ const CONFIG = {
     #printDoc{display:block;color:#000;font-family:var(--font-body);}
     #printDoc .p-head{display:flex;justify-content:space-between;border-bottom:2px solid #000;padding-bottom:12px;margin-bottom:14px;}
     #printDoc h1{font-family:var(--font-display);font-size:26px;}
-    #printDoc h2{font-family:var(--font-display);font-size:14px;text-transform:uppercase;letter-spacing:.1em;margin:20px 0 6px;padding-bottom:4px;border-bottom:1px solid #000;break-after:avoid;}
+    #printDoc .p-part{font-family:var(--font-display);font-size:20px;font-weight:800;margin:26px 0 0;break-after:avoid;}
+    #printDoc h2{font-family:var(--font-display);font-size:14px;text-transform:uppercase;letter-spacing:.1em;margin:18px 0 6px;padding-bottom:4px;border-bottom:1px solid #000;break-after:avoid;}
+    #printDoc h3{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:#444;margin:10px 0 2px;break-after:avoid;}
     #printDoc .p-meta{font-size:12px;color:#444;margin-top:2px;}
-    #printDoc .p-cust{font-size:13px;line-height:1.5;}
+    #printDoc .p-cust{font-size:13px;line-height:1.5;text-align:right;}
     #printDoc .p-line{display:flex;justify-content:space-between;gap:16px;padding:5px 0;border-bottom:1px solid #ddd;font-size:13px;break-inside:avoid;}
     #printDoc .p-line span:last-child{font-weight:600;text-align:right;}
     #printDoc .p-note{font-size:12px;color:#444;font-style:italic;padding:0 0 5px;border-bottom:1px solid #ddd;margin-top:-1px;}
@@ -508,7 +749,10 @@ const CONFIG = {
     </header>
 
     <div class="grid">
-      <div id="survey"></div>
+      <div>
+        <div class="parts" id="parts"></div>
+        <div id="survey"></div>
+      </div>
 
       <div class="slip-wrap" id="slipWrap">
         <div class="slip">
@@ -517,12 +761,8 @@ const CONFIG = {
             <span class="ref" id="ref"></span>
           </div>
           <div class="slip-body">
-            <div class="prog">
-              <span class="lbl">Answered</span>
-              <span class="amt" id="progAmt">0 / 0</span>
-            </div>
-            <div class="bar"><i id="progBar"></i></div>
-            <div id="secList"></div>
+            <div id="partProg"></div>
+            <div class="sec-list" id="secList"></div>
 
             <div class="flags">
               <h3 id="flagsHead">Follow up</h3>
@@ -556,7 +796,7 @@ const CONFIG = {
   </div>
 
   <div class="mbar">
-    <div class="m-total"><small>Answered</small><span id="mProg">0 / 0</span><span class="m-flags" id="mFlags"></span></div>
+    <div class="m-total"><small id="mLbl">Answered</small><span id="mProg">0 / 0</span><span class="m-flags" id="mFlags"></span></div>
     <button id="mScroll">View summary</button>
   </div>
 
@@ -568,17 +808,23 @@ const CONFIG = {
   const $ = id => document.getElementById(id);
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const svgTick = '<svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>';
+  const svgChev = '<svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>';
   const STORE = 'kitchen-survey-draft';
 
   // Flat lookups over the config
-  const Q = {}, SEC = {};
-  CONFIG.sections.forEach(s => {
-    SEC[s.id] = s;
-    s.questions.forEach(q => { q.section = s.id; Q[q.id] = q; });
+  const Q = {}, SEC = {}, PART = {}, ALLSEC = [];
+  CONFIG.parts.forEach(p => {
+    PART[p.id] = p;
+    p.sections.forEach(s => {
+      s.part = p.id; SEC[s.id] = s; ALLSEC.push(s);
+      s.questions.forEach(q => { q.section = s.id; Q[q.id] = q; });
+    });
   });
 
-  let state = { answers:{}, notes:{}, details:{}, started:new Date().toISOString() };
+  const fresh = () => ({ answers:{}, notes:{}, details:{}, repeats:{}, part:CONFIG.parts[0].id, started:new Date().toISOString() });
+  let state = fresh();
   const photos = {};   // sectionId -> [dataURL]; kept in memory only, too big to autosave
+  const open = new Set();
 
   function load(){
     if (!CONFIG.autosave) return;
@@ -586,28 +832,39 @@ const CONFIG = {
       const raw = localStorage.getItem(STORE);
       if (raw) state = Object.assign(state, JSON.parse(raw));
     } catch(e){}
+    if (!PART[state.part]) state.part = CONFIG.parts[0].id;
   }
   function save(){
     if (!CONFIG.autosave) return;
     try { localStorage.setItem(STORE, JSON.stringify(state)); } catch(e){}
   }
 
+  // A question in a repeated section has one answer per copy: winW, winW_2, winW_3…
+  const key = (q, i) => i ? q.id + '_' + (i + 1) : q.id;
+  const copies = s => s.repeat ? (state.repeats[s.id] || 1) : 1;
+  const instName = (s, i) => s.repeat + ' ' + (i + 1);
+
   const opts = q => q.type === 'yesno' ? ['Yes','No'] : (q.options || []);
   const isSet = v => Array.isArray(v) ? v.length > 0 : (v !== undefined && v !== null && String(v).trim() !== '');
   const counts = q => q.type !== 'note';
 
-  function condMet(when){
+  // Conditions point at another question; inside a repeated section they
+  // look at the same copy (Door 2's hinge depends on Door 2's swing).
+  function condMet(when, s, i){
     if (!when) return true;
-    if (Q[when.q] && !visible(Q[when.q])) return false;
-    const v = state.answers[when.q];
+    const t = Q[when.q];
+    if (!t) return false;
+    const ti = t.section === s.id ? i : 0;
+    if (!visible(t, ti)) return false;
+    const v = state.answers[key(t, ti)];
     if (Array.isArray(v)) return v.some(x => when.in.includes(x));
     return when.in.includes(v);
   }
-  function secVisible(s){ return condMet(s.when); }
-  function visible(q){ return secVisible(SEC[q.section]) && condMet(q.when); }
+  function secVisible(s){ return condMet(s.when, s, 0); }
+  function visible(q, i){ const s = SEC[q.section]; return secVisible(s) && condMet(q.when, s, i); }
 
-  function flaggedVals(q){
-    const v = state.answers[q.id];
+  function flaggedVals(q, i){
+    const v = state.answers[key(q, i)];
     if (!q.flag || !isSet(v)) return [];
     return (Array.isArray(v) ? v : [v]).filter(x => q.flag.includes(x));
   }
@@ -620,29 +877,85 @@ const CONFIG = {
   }
 
   // ---------- Build the checklist ----------
-  function renderControl(q){
-    const v = state.answers[q.id];
+  function renderControl(q, k, noteBtn){
+    const v = state.answers[k];
     const o = opts(q);
     if (q.type === 'choice' || q.type === 'yesno'){
       if (o.length <= 4){
-        return '<div class="seg" data-q="'+q.id+'" style="--n:'+o.length+'"><span class="seg-pill"></span>' +
-          o.map((x,i) => '<button type="button" data-i="'+i+'">'+esc(x)+'</button>').join('') + '</div>';
+        return '<div class="seg" data-k="'+k+'" style="--n:'+o.length+'"><span class="seg-pill"></span>' +
+          o.map((x,j) => '<button type="button" data-j="'+j+'">'+esc(x)+'</button>').join('') + '</div>';
       }
-      return '<div class="chips" data-q="'+q.id+'" data-single="1">' +
-        o.map((x,i) => '<button type="button" class="chip" data-i="'+i+'">'+esc(x)+'</button>').join('') + '</div>';
+      return '<div class="chips" data-k="'+k+'" data-single="1">' +
+        o.map((x,j) => '<button type="button" class="chip" data-j="'+j+'">'+esc(x)+'</button>').join('') + '</div>';
     }
     if (q.type === 'checks'){
-      return '<div class="chips" data-q="'+q.id+'">' +
-        o.map((x,i) => '<button type="button" class="chip" data-i="'+i+'"><span class="tk">'+svgTick+'</span>'+esc(x)+'</button>').join('') + '</div>';
+      return '<div class="chips" data-k="'+k+'">' +
+        o.map((x,j) => '<button type="button" class="chip" data-j="'+j+'"><span class="tk">'+svgTick+'</span>'+esc(x)+'</button>').join('') + '</div>';
     }
     if (q.type === 'number'){
-      return '<div class="num"><input type="number" inputmode="decimal" data-q="'+q.id+'" value="'+esc(v)+'">' +
-        (q.unit ? '<span class="unit">'+esc(q.unit)+'</span>' : '') + '</div>';
+      return '<div class="num"><input type="number" inputmode="decimal" data-k="'+k+'" value="'+esc(v)+'">' +
+        (q.unit ? '<span class="unit">'+esc(q.unit)+'</span>' : '') + noteBtn + '</div>';
     }
-    if (q.type === 'note'){
-      return '<textarea data-q="'+q.id+'">'+esc(v)+'</textarea>';
+    if (q.type === 'note') return '<textarea data-k="'+k+'">'+esc(v)+'</textarea>';
+    return '<input type="text" data-k="'+k+'" value="'+esc(v)+'">';
+  }
+
+  function renderQ(q, i){
+    const k = key(q, i);
+    const note = state.notes[k] || '';
+    const canNote = q.type !== 'note';
+    const noteBtn = '<button type="button" class="note-btn'+(note ? ' has' : '')+'" data-note="'+k+'">'+(note ? 'Note ✓' : '+ Note')+'</button>';
+    return '<div class="q'+(q.when ? ' sub' : '')+'" id="q-'+k+'">' +
+      '<div class="q-head"><div><div class="q-label">'+esc(q.label)+'</div>' +
+      (q.hint ? '<div class="q-hint">'+esc(q.hint)+'</div>' : '') + '</div>' +
+      (canNote && q.type !== 'number' ? noteBtn : '') +
+      '</div>' + renderControl(q, k, noteBtn) +
+      (canNote ? '<div class="q-note'+(note ? ' open' : '')+'"><textarea data-notefor="'+k+'" placeholder="Note">'+esc(note)+'</textarea></div>' : '') +
+      '</div>';
+  }
+
+  // Runs of number questions go into a grid so measurements sit side by side
+  function renderQuestions(s, i){
+    let html = '', run = [];
+    const flush = () => {
+      if (run.length) html += '<div class="num-grid">' + run.join('') + '</div>';
+      run = [];
+    };
+    s.questions.forEach(q => {
+      if (q.type === 'number') run.push(renderQ(q, i));
+      else { flush(); html += renderQ(q, i); }
+    });
+    flush();
+    return html;
+  }
+
+  function nextSection(s){
+    const list = PART[s.part].sections.filter(secVisible);
+    return list[list.indexOf(s) + 1];
+  }
+
+  function renderSection(s, n){
+    const el = $('sec-' + s.id);
+    let body = '';
+    if (s.repeat){
+      const c = copies(s);
+      for (let i = 0; i < c; i++){
+        body += '<div class="inst"><div class="inst-head"><span>'+esc(instName(s, i))+'</span>' +
+          (i === c - 1 && c > 1 ? '<button type="button" class="link-btn" data-remove="'+s.id+'">Remove</button>' : '') +
+          '</div>' + renderQuestions(s, i) + '</div>';
+      }
+      body += '<button type="button" class="add-inst" data-add="'+s.id+'">+ Add another '+esc(s.repeat.toLowerCase())+'</button>';
+    } else {
+      body += renderQuestions(s, 0);
     }
-    return '<input type="text" data-q="'+q.id+'" value="'+esc(v)+'">';
+    if (s.photos) body += '<div class="photos"><div class="photo-grid" id="ph-'+s.id+'"></div></div>';
+    body += '<div class="card-foot"><button type="button" class="next-btn" data-next="'+s.id+'"></button></div>';
+
+    el.innerHTML = '<button type="button" class="card-head" data-toggle="'+s.id+'">' +
+      '<span class="c-num">'+String(n).padStart(2,'0')+'</span>' +
+      '<span class="c-title">'+esc(s.title)+'</span><span class="cat-count" id="cnt-'+s.id+'"></span>'+svgChev+'</button>' +
+      '<div class="card-body">'+body+'</div>';
+    if (s.photos) renderPhotos(s.id);
   }
 
   function render(){
@@ -651,31 +964,20 @@ const CONFIG = {
     $('tagline').textContent = CONFIG.tagline;
     document.title = CONFIG.business;
 
+    $('parts').innerHTML = '<span class="seg-pill"></span>' + CONFIG.parts.map((p,i) =>
+      '<button type="button" data-part="'+p.id+'"><span class="p-num">'+(i+1)+'</span>' +
+      '<span class="p-txt"><span class="p-title">'+esc(p.title)+'</span><span class="p-sub">'+esc(p.sub || '')+'</span></span></button>'
+    ).join('');
+
     const root = $('survey');
     root.innerHTML = '';
-    CONFIG.sections.forEach(s => {
+    CONFIG.parts.forEach(p => p.sections.forEach((s, n) => {
       const el = document.createElement('section');
-      el.className = 'cat';
+      el.className = 'card';
       el.id = 'sec-' + s.id;
-      let html = '<h2><span>'+esc(s.title)+'</span><span class="cat-count" id="cnt-'+s.id+'"></span></h2>';
-      s.questions.forEach(q => {
-        const note = state.notes[q.id] || '';
-        const canNote = q.type !== 'note';
-        html += '<div class="q'+(q.when ? ' sub' : '')+'" id="q-'+q.id+'">' +
-          '<div class="q-head"><div><div class="q-label">'+esc(q.label)+'</div>' +
-          (q.hint ? '<div class="q-hint">'+esc(q.hint)+'</div>' : '') + '</div>' +
-          (canNote ? '<button type="button" class="note-btn'+(note ? ' has' : '')+'" data-note="'+q.id+'">'+(note ? 'Note ✓' : '+ Note')+'</button>' : '') +
-          '</div>' + renderControl(q) +
-          (canNote ? '<div class="q-note'+(note ? ' open' : '')+'"><textarea data-notefor="'+q.id+'" placeholder="Note">'+esc(note)+'</textarea></div>' : '') +
-          '</div>';
-      });
-      if (s.photos){
-        html += '<div class="photos"><div class="photo-grid" id="ph-'+s.id+'"></div></div>';
-      }
-      el.innerHTML = html;
       root.appendChild(el);
-      if (s.photos) renderPhotos(s.id);
-    });
+      renderSection(s, n + 1);
+    }));
 
     $('dName').value = state.details.name || '';
     $('dAddr').value = state.details.addr || '';
@@ -689,96 +991,196 @@ const CONFIG = {
 
   // ---------- Update visible state without rebuilding (keeps typing focus) ----------
   function refresh(){
-    let total = 0, done = 0;
     const flags = [];
-    CONFIG.sections.forEach(s => {
-      const sv = secVisible(s);
-      $('sec-' + s.id).classList.toggle('hide', !sv);
-      let st = 0, sd = 0;
-      s.questions.forEach(q => {
-        const el = $('q-' + q.id);
-        const vis = sv && condMet(q.when);
-        el.classList.toggle('hide', !vis);
-        const v = state.answers[q.id];
-        const fv = vis ? flaggedVals(q) : [];
-        el.classList.toggle('flagged', fv.length > 0);
-        if (vis && fv.length) flags.push({ q, vals:fv });
-        if (vis && counts(q)){ st++; if (isSet(v)) sd++; }
+    const partTot = {};
+    CONFIG.parts.forEach(p => partTot[p.id] = { t:0, d:0 });
 
-        const seg = el.querySelector('.seg');
-        if (seg){
-          const i = opts(q).indexOf(v);
-          seg.style.setProperty('--i', Math.max(i, 0));
-          seg.classList.toggle('set', i >= 0);
-          seg.classList.toggle('warn', fv.length > 0);
-          seg.querySelectorAll('button').forEach((b,j) => b.classList.toggle('on', j === i));
-        }
-        const chips = el.querySelector('.chips');
-        if (chips){
-          const arr = Array.isArray(v) ? v : (isSet(v) ? [v] : []);
-          chips.querySelectorAll('.chip').forEach((b,j) => {
-            const val = opts(q)[j];
-            const on = arr.includes(val);
-            b.classList.toggle('on', on);
-            b.classList.toggle('warn', on && q.flag && q.flag.includes(val));
-          });
-        }
-      });
-      if (sv){ total += st; done += sd; }
+    ALLSEC.forEach(s => {
+      const card = $('sec-' + s.id);
+      const sv = secVisible(s);
+      card.classList.toggle('hide', !sv || s.part !== state.part);
+      card.classList.toggle('open', open.has(s.id));
+      let st = 0, sd = 0, sf = 0;
+      for (let i = 0; i < copies(s); i++){
+        s.questions.forEach(q => {
+          const k = key(q, i);
+          const el = $('q-' + k);
+          const vis = sv && condMet(q.when, s, i);
+          el.classList.toggle('hide', !vis);
+          const v = state.answers[k];
+          const fv = vis ? flaggedVals(q, i) : [];
+          el.classList.toggle('flagged', fv.length > 0);
+          if (fv.length){ sf++; flags.push({ q, i, s, vals:fv }); }
+          if (vis && counts(q)){ st++; if (isSet(v)) sd++; }
+
+          const seg = el.querySelector('.seg');
+          if (seg){
+            const j = opts(q).indexOf(v);
+            seg.style.setProperty('--i', Math.max(j, 0));
+            seg.classList.toggle('set', j >= 0);
+            seg.classList.toggle('warn', fv.length > 0);
+            seg.querySelectorAll('button').forEach((b,x) => b.classList.toggle('on', x === j));
+          }
+          const chips = el.querySelector('.chips');
+          if (chips){
+            const arr = Array.isArray(v) ? v : (isSet(v) ? [v] : []);
+            chips.querySelectorAll('.chip').forEach((b,x) => {
+              const val = opts(q)[x];
+              const on = arr.includes(val);
+              b.classList.toggle('on', on);
+              b.classList.toggle('warn', on && !!q.flag && q.flag.includes(val));
+            });
+          }
+        });
+      }
+      if (sv){ partTot[s.part].t += st; partTot[s.part].d += sd; }
       const cnt = $('cnt-' + s.id);
-      cnt.textContent = sd + ' / ' + st;
+      cnt.innerHTML = (sf ? '<span class="fl">⚑ '+sf+'</span>' : '') + (st && sd === st ? '✓ ' : '') + sd + ' / ' + st;
       cnt.classList.toggle('done', st > 0 && sd === st);
+      card.classList.toggle('done', st > 0 && sd === st);
       s._st = st; s._sd = sd; s._vis = sv;
+
+      const nb = card.querySelector('[data-next]');
+      const nx = nextSection(s);
+      const pi = CONFIG.parts.findIndex(p => p.id === s.part);
+      nb.textContent = nx ? 'Next: ' + nx.title + ' →'
+        : CONFIG.parts[pi + 1] ? 'On to Part ' + (pi + 2) + ': ' + CONFIG.parts[pi + 1].title + ' →'
+        : 'Done — view summary';
     });
 
-    $('progAmt').textContent = done + ' / ' + total;
-    $('mProg').textContent = done + ' / ' + total;
-    $('progBar').style.width = (total ? done / total * 100 : 0) + '%';
-    $('mFlags').textContent = flags.length ? flags.length + ' to follow up' : '';
+    // part switcher
+    const pi = CONFIG.parts.findIndex(p => p.id === state.part);
+    $('parts').style.setProperty('--i', pi);
+    $('parts').querySelectorAll('[data-part]').forEach(b => b.classList.toggle('on', b.dataset.part === state.part));
 
-    $('secList').innerHTML = CONFIG.sections.filter(s => s._vis).map(s =>
+    $('partProg').innerHTML = CONFIG.parts.map((p,i) => {
+      const t = partTot[p.id];
+      return '<div class="part-prog'+(p.id === state.part ? ' cur' : '')+'" data-part="'+p.id+'"><div class="row">' +
+        '<span class="lbl"><small>Part '+(i+1)+'</small>'+esc(p.title)+'</span><span class="amt">'+t.d+' / '+t.t+'</span></div>' +
+        '<div class="bar"><i style="width:'+(t.t ? t.d / t.t * 100 : 0)+'%"></i></div></div>';
+    }).join('');
+
+    const cur = partTot[state.part];
+    $('mLbl').textContent = 'Part ' + (pi + 1) + ' · ' + PART[state.part].title;
+    $('mProg').textContent = cur.d + ' / ' + cur.t;
+    $('mFlags').textContent = flags.length ? '⚑ ' + flags.length : '';
+
+    $('secList').innerHTML = PART[state.part].sections.filter(s => s._vis).map(s =>
       '<button type="button" class="sec-link'+(s._st && s._sd === s._st ? ' done' : '')+'" data-goto="'+s.id+'">' +
       '<span class="s-name">'+esc(s.title)+'</span><span class="s-n">'+(s._sd === s._st && s._st ? '✓ ' : '')+s._sd+' / '+s._st+'</span></button>'
     ).join('');
 
     $('flagsHead').textContent = 'Follow up' + (flags.length ? ' (' + flags.length + ')' : '');
     $('flagList').innerHTML = flags.length
-      ? flags.map(f => '<div class="flag-item" data-jump="'+f.q.id+'">'+esc(f.q.label)+' <b>'+esc(f.vals.join(', '))+'</b></div>').join('')
+      ? flags.map(f => '<div class="flag-item" data-jump="'+key(f.q, f.i)+'" data-sec="'+f.s.id+'">' +
+          (f.s.repeat ? esc(instName(f.s, f.i)) + ': ' : '') + esc(f.q.label)+' <b>'+esc(f.vals.join(', '))+'</b></div>').join('')
       : '<div class="flags-none">Nothing flagged yet.</div>';
 
     $('ref').textContent = new Date(state.started).toLocaleDateString('en-GB');
     save();
   }
 
+  // ---------- Navigation ----------
+  function setPart(id){
+    if (state.part === id) return;
+    state.part = id;
+    // open the first unfinished section of the new part if nothing there is open
+    const secs = PART[id].sections.filter(secVisible);
+    if (!secs.some(s => open.has(s.id))){
+      const first = secs.find(s => s._sd < s._st) || secs[0];
+      if (first) open.add(first.id);
+    }
+    refresh();
+  }
+  function scrollTo(el, block){
+    el.scrollIntoView({ behavior:'smooth', block:block || 'start' });
+  }
+  function openSection(id, scroll){
+    setPart(SEC[id].part);
+    open.add(id);
+    refresh();
+    if (scroll) scrollTo($('sec-' + id));
+  }
+
   // ---------- Input handling ----------
+  const KEY = {};   // answer key -> { q, i }
+  ALLSEC.forEach(s => s.questions.forEach(q => { for (let i = 0; i < 20; i++) KEY[key(q, i)] = { q, i }; }));
+
   const root = $('survey');
   root.addEventListener('click', e => {
-    const segBtn = e.target.closest('.seg button');
-    const chip = e.target.closest('.chip');
-    const noteBtn = e.target.closest('.note-btn');
-    if (segBtn || chip){
-      const box = (segBtn || chip).parentElement;
-      const q = Q[box.dataset.q];
-      const val = opts(q)[+(segBtn || chip).dataset.i];
+    const t = e.target;
+    const tog = t.closest('[data-toggle]');
+    if (tog){
+      const id = tog.dataset.toggle;
+      open.has(id) ? open.delete(id) : open.add(id);
+      refresh();
+      return;
+    }
+    const nx = t.closest('[data-next]');
+    if (nx){
+      const s = SEC[nx.dataset.next];
+      open.delete(s.id);
+      const n = nextSection(s);
+      if (n){ open.add(n.id); refresh(); scrollTo($('sec-' + n.id)); return; }
+      const pi = CONFIG.parts.findIndex(p => p.id === s.part);
+      if (CONFIG.parts[pi + 1]){ refresh(); setPart(CONFIG.parts[pi + 1].id); scrollTo($('parts')); }
+      else { refresh(); scrollTo($('slipWrap')); }
+      return;
+    }
+    const add = t.closest('[data-add]');
+    if (add){
+      const s = SEC[add.dataset.add];
+      state.repeats[s.id] = Math.min(copies(s) + 1, 20);
+      renderSection(s, PART[s.part].sections.indexOf(s) + 1);
+      refresh();
+      return;
+    }
+    const rem = t.closest('[data-remove]');
+    if (rem){
+      const s = SEC[rem.dataset.remove];
+      const last = copies(s) - 1;
+      if (!confirm('Remove ' + instName(s, last) + ' and its answers?')) return;
+      s.questions.forEach(q => { delete state.answers[key(q, last)]; delete state.notes[key(q, last)]; });
+      state.repeats[s.id] = last;
+      renderSection(s, PART[s.part].sections.indexOf(s) + 1);
+      refresh();
+      return;
+    }
+    const opt = t.closest('.seg button, .chip');
+    if (opt){
+      const box = opt.parentElement;
+      const { q } = KEY[box.dataset.k];
+      const k = box.dataset.k;
+      const val = opts(q)[+opt.dataset.j];
       if (q.type === 'checks'){
-        let arr = Array.isArray(state.answers[q.id]) ? state.answers[q.id].slice() : [];
+        let arr = Array.isArray(state.answers[k]) ? state.answers[k].slice() : [];
         arr = arr.includes(val) ? arr.filter(x => x !== val) : arr.concat(val);
-        state.answers[q.id] = arr;
+        state.answers[k] = arr;
       } else {
         // tapping the selected option again clears it
-        state.answers[q.id] = state.answers[q.id] === val ? undefined : val;
+        state.answers[k] = state.answers[k] === val ? undefined : val;
       }
       refresh();
-    } else if (noteBtn){
+      return;
+    }
+    const noteBtn = t.closest('.note-btn');
+    if (noteBtn){
       const wrap = $('q-' + noteBtn.dataset.note).querySelector('.q-note');
       wrap.classList.toggle('open');
       if (wrap.classList.contains('open')) wrap.querySelector('textarea').focus();
+      return;
+    }
+    const del = t.closest('[data-del]');
+    if (del){
+      const sid = del.closest('.photo-grid').id.slice(3);
+      photos[sid].splice(+del.dataset.del, 1);
+      renderPhotos(sid);
     }
   });
   root.addEventListener('input', e => {
     const t = e.target;
-    if (t.dataset.q){
-      state.answers[t.dataset.q] = t.value;
+    if (t.dataset.k){
+      state.answers[t.dataset.k] = t.value;
       refresh();
     } else if (t.dataset.notefor){
       state.notes[t.dataset.notefor] = t.value;
@@ -789,28 +1191,35 @@ const CONFIG = {
     }
   });
 
+  $('parts').addEventListener('click', e => {
+    const b = e.target.closest('[data-part]');
+    if (b) setPart(b.dataset.part);
+  });
+  $('partProg').addEventListener('click', e => {
+    const b = e.target.closest('[data-part]');
+    if (b){ setPart(b.dataset.part); scrollTo($('parts')); }
+  });
+
   [['dName','name'],['dAddr','addr'],['dPhone','phone'],['dBy','by']].forEach(([id,k]) => {
     $(id).addEventListener('input', e => { state.details[k] = e.target.value; save(); });
   });
 
-  function jumpTo(el){
-    el.scrollIntoView({ behavior:'smooth', block:'start' });
-  }
   $('secList').addEventListener('click', e => {
     const b = e.target.closest('[data-goto]');
-    if (b) jumpTo($('sec-' + b.dataset.goto));
+    if (b) openSection(b.dataset.goto, true);
   });
   $('flagList').addEventListener('click', e => {
     const b = e.target.closest('[data-jump]');
     if (!b) return;
-    const el = $('q-' + b.dataset.jump);
-    el.scrollIntoView({ behavior:'smooth', block:'center' });
+    openSection(b.dataset.sec, false);
+    scrollTo($('q-' + b.dataset.jump), 'center');
   });
-  $('mScroll').addEventListener('click', () => jumpTo($('slipWrap')));
+  $('mScroll').addEventListener('click', () => scrollTo($('slipWrap')));
 
   // ---------- Photos ----------
   function renderPhotos(sid){
     const grid = $('ph-' + sid);
+    if (!grid) return;
     const list = photos[sid] || [];
     grid.innerHTML = list.map((src,i) =>
       '<div class="photo"><img src="'+src+'" alt=""><button type="button" data-del="'+i+'" aria-label="Remove photo">×</button></div>'
@@ -844,34 +1253,35 @@ const CONFIG = {
     }
     renderPhotos(sid);
   });
-  root.addEventListener('click', e => {
-    const del = e.target.closest('[data-del]');
-    if (!del) return;
-    const sid = del.closest('.photo-grid').id.slice(3);
-    photos[sid].splice(+del.dataset.del, 1);
-    renderPhotos(sid);
-  });
 
   // ---------- Output ----------
-  function collect(){
-    return CONFIG.sections.filter(secVisible).map(s => {
-      const rows = [], texts = [];
-      let skipped = 0;
-      s.questions.filter(visible).forEach(q => {
-        const v = state.answers[q.id];
-        const note = (state.notes[q.id] || '').trim();
+  function collectSection(s){
+    const groups = [];
+    let skipped = 0;
+    const texts = [];
+    for (let i = 0; i < copies(s); i++){
+      const rows = [];
+      s.questions.forEach(q => {
+        if (!visible(q, i)) return;
+        const k = key(q, i);
+        const v = state.answers[k];
+        const note = (state.notes[k] || '').trim();
         if (q.type === 'note'){ if (isSet(v)) texts.push({ label:q.label, text:v }); return; }
         if (!isSet(v) && !note){ skipped++; return; }
-        rows.push({ label:q.label, answer:fmtAnswer(q, v) || '—', note, flag:flaggedVals(q).length > 0 });
+        rows.push({ label:q.label, answer:fmtAnswer(q, v) || '—', note, flag:flaggedVals(q, i).length > 0 });
       });
-      return { s, rows, texts, skipped, photos:photos[s.id] || [] };
-    });
+      groups.push({ name:s.repeat ? instName(s, i) : '', rows });
+    }
+    return { s, groups, texts, skipped, photos:photos[s.id] || [],
+      empty: !groups.some(g => g.rows.length) && !texts.length && !(photos[s.id] || []).length };
   }
   function allFlags(){
     const out = [];
-    CONFIG.sections.forEach(s => s.questions.forEach(q => {
-      if (visible(q)){ const fv = flaggedVals(q); if (fv.length) out.push(q.label + ' — ' + fv.join(', ')); }
-    }));
+    ALLSEC.forEach(s => { for (let i = 0; i < copies(s); i++) s.questions.forEach(q => {
+      if (!visible(q, i)) return;
+      const fv = flaggedVals(q, i);
+      if (fv.length) out.push((s.repeat ? instName(s, i) + ': ' : '') + q.label + ' — ' + fv.join(', '));
+    }); });
     return out;
   }
 
@@ -883,19 +1293,25 @@ const CONFIG = {
       '<div class="p-cust">'+(d.name ? '<strong>'+esc(d.name)+'</strong><br>' : '') +
       esc(d.addr || '').replace(/\n/g,'<br>') + (d.phone ? '<br>'+esc(d.phone) : '') + '</div></div>';
     const fl = allFlags();
-    if (fl.length){
-      html += '<h2>Follow up</h2>' + fl.map(f => '<div class="p-flag">'+esc(f)+'</div>').join('');
-    }
-    collect().forEach(c => {
-      if (!c.rows.length && !c.texts.length && !c.photos.length) return;
-      html += '<h2>'+esc(c.s.title)+'</h2>';
-      c.rows.forEach(r => {
-        html += '<div class="p-line"><span>'+(r.flag ? '⚠ ' : '')+esc(r.label)+'</span><span>'+esc(r.answer)+'</span></div>';
-        if (r.note) html += '<div class="p-note">'+esc(r.note)+'</div>';
+    if (fl.length) html += '<h2>Follow up</h2>' + fl.map(f => '<div class="p-flag">'+esc(f)+'</div>').join('');
+    CONFIG.parts.forEach((p, pi) => {
+      const secs = p.sections.filter(secVisible).map(collectSection).filter(c => !c.empty);
+      if (!secs.length) return;
+      html += '<div class="p-part">Part '+(pi+1)+' — '+esc(p.title)+'</div>';
+      secs.forEach(c => {
+        html += '<h2>'+esc(c.s.title)+'</h2>';
+        c.groups.forEach(g => {
+          if (!g.rows.length) return;
+          if (g.name) html += '<h3>'+esc(g.name)+'</h3>';
+          g.rows.forEach(r => {
+            html += '<div class="p-line"><span>'+(r.flag ? '⚠ ' : '')+esc(r.label)+'</span><span>'+esc(r.answer)+'</span></div>';
+            if (r.note) html += '<div class="p-note">'+esc(r.note)+'</div>';
+          });
+        });
+        c.texts.forEach(t => { html += '<div class="p-line"><span>'+esc(t.label)+'</span><span></span></div><div class="p-text">'+esc(t.text)+'</div>'; });
+        if (c.skipped) html += '<div class="p-skip">'+c.skipped+' question'+(c.skipped !== 1 ? 's' : '')+' not answered</div>';
+        if (c.photos.length) html += '<div class="p-photos">'+c.photos.map(src => '<img src="'+src+'">').join('')+'</div>';
       });
-      c.texts.forEach(t => { html += '<div class="p-line"><span>'+esc(t.label)+'</span><span></span></div><div class="p-text">'+esc(t.text)+'</div>'; });
-      if (c.skipped) html += '<div class="p-skip">'+c.skipped+' question'+(c.skipped !== 1 ? 's' : '')+' not answered</div>';
-      if (c.photos.length) html += '<div class="p-photos">'+c.photos.map(p => '<img src="'+p+'">').join('')+'</div>';
     });
     $('printDoc').innerHTML = html;
   }
@@ -910,14 +1326,22 @@ const CONFIG = {
     if (d.by) L.push('Surveyed by: ' + d.by);
     const fl = allFlags();
     if (fl.length){ L.push('', 'FOLLOW UP'); fl.forEach(f => L.push('! ' + f)); }
-    collect().forEach(c => {
-      if (!c.rows.length && !c.texts.length) return;
-      L.push('', c.s.title.toUpperCase());
-      c.rows.forEach(r => {
-        L.push('- ' + r.label + ': ' + r.answer);
-        if (r.note) L.push('    Note: ' + r.note);
+    CONFIG.parts.forEach((p, pi) => {
+      const secs = p.sections.filter(secVisible).map(collectSection).filter(c => c.groups.some(g => g.rows.length) || c.texts.length);
+      if (!secs.length) return;
+      L.push('', '=== PART ' + (pi+1) + ': ' + p.title.toUpperCase() + ' ===');
+      secs.forEach(c => {
+        L.push('', c.s.title.toUpperCase());
+        c.groups.forEach(g => {
+          if (!g.rows.length) return;
+          if (g.name) L.push(g.name + ':');
+          g.rows.forEach(r => {
+            L.push((g.name ? '  ' : '') + '- ' + r.label + ': ' + r.answer);
+            if (r.note) L.push((g.name ? '  ' : '') + '    Note: ' + r.note);
+          });
+        });
+        c.texts.forEach(t => L.push('- ' + t.label + ':', '    ' + t.text.replace(/\n/g, '\n    ')));
       });
-      c.texts.forEach(t => L.push('- ' + t.label + ':', '    ' + t.text.replace(/\n/g, '\n    ')));
     });
     return L.join('\n');
   }
@@ -943,9 +1367,11 @@ const CONFIG = {
   });
   $('newBtn').addEventListener('click', () => {
     if (!confirm('Clear every answer, note and photo and start a new survey?')) return;
-    state = { answers:{}, notes:{}, details:{}, started:new Date().toISOString() };
+    state = fresh();
     Object.keys(photos).forEach(k => delete photos[k]);
     try { localStorage.removeItem(STORE); } catch(e){}
+    open.clear();
+    open.add(PART[state.part].sections[0].id);
     render();
     window.scrollTo({ top:0, behavior:'smooth' });
     toast('New survey started');
@@ -953,7 +1379,11 @@ const CONFIG = {
   window.addEventListener('beforeprint', buildPrint);
 
   load();
+  // start with the first unfinished section of the current part open
   render();
+  const firstOpen = PART[state.part].sections.filter(secVisible).find(s => s._sd < s._st) || PART[state.part].sections[0];
+  open.add(firstOpen.id);
+  refresh();
 })();
 </script>
 </body>
