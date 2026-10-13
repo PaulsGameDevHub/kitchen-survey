@@ -42,6 +42,9 @@
                     Use "detailsSkip": ["None"] to leave some out, "detailNames"
                     to name them ({ "Gas": "Gas hob" }) or "detailPrefix": "Customer's ".
                     "detailsAskNew": true also asks whether each one is new or existing.
+       "askWho"     once answered, asks who is doing it (Us / Customer / Split),
+                    e.g. "askWho": "tiling". "askWhoSkip": ["None"] skips answers
+                    that mean no work.
                     Power choices come from "powerOptions" at the top.
        "flagDetail" show another answer in place of a flagged option, e.g.
                     "flagDetail": { "Other": "wtDepthOther" } lists "Other" as
@@ -388,9 +391,11 @@ const CONFIG = {
           "photos": false,
           "questions": [
             { "id": "elecWork", "label": "Electrical work wanted", "type": "checks",
-              "options": ["Extra sockets", "Move sockets", "USB sockets", "Appliance spurs"] },
+              "options": ["Extra sockets", "Move sockets", "USB sockets", "Appliance spurs"],
+              "askWho": "electrical work" },
             { "id": "lights", "label": "Lighting wanted", "type": "checks",
-              "options": ["Spotlights", "Pendants", "Under-unit lights", "Plinth lights", "In-cupboard lights"] }
+              "options": ["Spotlights", "Pendants", "Under-unit lights", "Plinth lights", "In-cupboard lights"],
+              "askWho": "lighting" }
           ]
         },
         {
@@ -400,11 +405,14 @@ const CONFIG = {
           "questions": [
             { "id": "newFloor", "label": "New floor goes down", "type": "choice",
               "options": ["Before units", "After units", "No new floor"],
+              "askWho": "new floor", "askWhoSkip": ["No new floor"],
               "when": { "q": "keepFloor", "notIn": ["Yes"] } },
             { "id": "plaster", "label": "Plastering", "type": "checks",
-              "options": ["Patch repairs", "Skim walls", "Skim ceiling"] },
+              "options": ["Patch repairs", "Skim walls", "Skim ceiling"],
+              "askWho": "plastering" },
             { "id": "tilingNew", "label": "Tiling", "type": "choice",
-              "options": ["None", "Splashback", "Walls", "Floor"] },
+              "options": ["None", "Splashback", "Walls", "Floor"],
+              "askWho": "tiling", "askWhoSkip": ["None"] },
             { "id": "otherTrades", "label": "Other trades needed", "type": "checks",
               "options": ["Plasterer", "Electrician", "Gas Safe", "Plumber", "Tiler", "Floor fitter", "Builder"] }
           ]
@@ -887,6 +895,14 @@ const CONFIG = {
     const out = [];
     s.questions.forEach(q => {
       out.push(q);
+      if (q.askWho){
+        const picked = (q.options || []).filter(o => !(q.askWhoSkip || []).includes(o));
+        out.push(
+          { id:q.id + '-who', label:'Who is doing the ' + q.askWho + '?', type:'choice',
+            options:['Us', 'Customer', 'Split'], when:{ q:q.id, in:picked } },
+          { id:q.id + '-whoSplit', label:'What is the customer doing?', type:'text',
+            when:{ q:q.id + '-who', in:['Split'] } });
+      }
       if (!q.details) return;
       (q.options || []).filter(o => !(q.detailsSkip || []).includes(o)).forEach(o => {
         let name = (q.detailNames || {})[o] || (q.type === 'checks' ? o : q.label + ' (' + o + ')');
