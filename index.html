@@ -73,9 +73,11 @@ const CONFIG = {
               "hint": "Deeper than 600mm can mean pipes hidden behind the units",
               "flagAbove": 600, "flagNote": "deeper than standard, check for hidden pipes" },
             { "id": "wtMat", "label": "Worktop material", "type": "choice",
-              "options": ["Laminate", "Solid wood", "Quartz", "Granite", "Other stone", "Compact"],
-              "hint": "Stone is heavy to lift out, so the installer may need a hand",
-              "flag": ["Quartz", "Granite", "Other stone"], "flagNote": "heavy, installer may need help to lift out" }
+              "options": ["Laminate / wood", "Quartz / granite", "Other"],
+              "hint": "Quartz and granite are heavy to lift out, so the installer may need a hand",
+              "flag": ["Quartz / granite"], "flagNote": "heavy, installer may need help to lift out" },
+            { "id": "wtMatOther", "label": "What is the worktop made of?", "type": "text",
+              "when": { "q": "wtMat", "in": ["Other"] } }
           ]
         },
         {
