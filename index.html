@@ -1070,7 +1070,7 @@ const CONFIG = {
       });
       if (sv){ partTot[s.part].t += st; partTot[s.part].d += sd; }
       const cnt = $('cnt-' + s.id);
-      cnt.innerHTML = (sf ? '<span class="fl">⚑ '+sf+'</span>' : '') + (st && sd === st ? '✓ ' : '') + sd + ' / ' + st;
+      cnt.innerHTML = (sf ? '<span class="fl">⚑ '+sf+'</span>' : '') + (st ? (sd === st ? '✓ ' : '') + sd + ' / ' + st : 'optional');
       cnt.classList.toggle('done', st > 0 && sd === st);
       card.classList.toggle('done', st > 0 && sd === st);
       s._st = st; s._sd = sd; s._vis = sv;
@@ -1102,7 +1102,7 @@ const CONFIG = {
 
     $('secList').innerHTML = PART[state.part].sections.filter(s => s._vis).map(s =>
       '<button type="button" class="sec-link'+(s._st && s._sd === s._st ? ' done' : '')+'" data-goto="'+s.id+'">' +
-      '<span class="s-name">'+esc(s.title)+'</span><span class="s-n">'+(s._sd === s._st && s._st ? '✓ ' : '')+s._sd+' / '+s._st+'</span></button>'
+      '<span class="s-name">'+esc(s.title)+'</span><span class="s-n">'+(s._st ? (s._sd === s._st ? '✓ ' : '')+s._sd+' / '+s._st : 'optional')+'</span></button>'
     ).join('');
 
     $('flagsHead').textContent = 'Follow up' + (flags.length ? ' (' + flags.length + ')' : '');
