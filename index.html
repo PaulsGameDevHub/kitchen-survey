@@ -26,6 +26,7 @@
        "hint"  small grey help text under the question
        "when"  only show it after another answer, e.g.
                "when": { "q": "wasteSeen", "in": ["Yes"] }
+               or hide it after one: "when": { "q": "keepFloor", "notIn": ["Yes"] }
        "flag"  answers that go on the follow-up list, e.g. "flag": ["No"]
        "flagAbove"  for numbers: flag anything bigger, e.g. "flagAbove": 600
        "flagNote"   a reason added to the follow-up list when it's flagged
@@ -111,6 +112,9 @@ const CONFIG = {
               "when": { "q": "floorType", "in": ["Both"] } },
             { "id": "floorFinish", "label": "Current floor finish", "type": "choice",
               "options": ["Tiles", "Vinyl / LVT", "Laminate / wood", "Bare"] },
+            { "id": "keepFloor", "label": "Is the customer keeping the current floor?", "type": "yesno",
+              "hint": "If so, units go on top of it, so check its condition and height",
+              "when": { "q": "floorFinish", "in": ["Tiles", "Vinyl / LVT", "Laminate / wood"] } },
             { "id": "floorLevel", "label": "Is the floor level?", "type": "choice",
               "options": ["Level", "Slight fall", "Needs levelling"], "flag": ["Needs levelling"] }
           ]
@@ -366,7 +370,8 @@ const CONFIG = {
           "photos": false,
           "questions": [
             { "id": "newFloor", "label": "New floor goes down", "type": "choice",
-              "options": ["Before units", "After units", "No new floor"] },
+              "options": ["Before units", "After units", "No new floor"],
+              "when": { "q": "keepFloor", "notIn": ["Yes"] } },
             { "id": "plaster", "label": "Plastering", "type": "checks",
               "options": ["Patch repairs", "Skim walls", "Skim ceiling"] },
             { "id": "tilingNew", "label": "Tiling", "type": "choice",
@@ -888,8 +893,10 @@ const CONFIG = {
     const t = Q[when.q];
     if (!t) return false;
     const ti = t.section === s.id ? i : 0;
-    if (!visible(t, ti)) return false;
     const v = state.answers[key(t, ti)];
+    // "notIn" shows the question unless the other answer matches
+    if (when.notIn) return !visible(t, ti) || !(Array.isArray(v) ? v.some(x => when.notIn.includes(x)) : when.notIn.includes(v));
+    if (!visible(t, ti)) return false;
     if (Array.isArray(v)) return v.some(x => when.in.includes(x));
     return when.in.includes(v);
   }
@@ -944,7 +951,8 @@ const CONFIG = {
     const note = state.notes[k] || '';
     const canNote = q.type !== 'note';
     const noteBtn = '<button type="button" class="note-btn'+(note ? ' has' : '')+'" data-note="'+k+'">'+noteLabel(note)+'</button>';
-    return '<div class="q'+(q.when ? ' sub' : '')+'" id="q-'+k+'">' +
+    const sub = q.when && Q[q.when.q] && Q[q.when.q].section === q.section;
+    return '<div class="q'+(sub ? ' sub' : '')+'" id="q-'+k+'">' +
       '<div class="q-head"><div><div class="q-label">'+esc(q.label)+'</div>' +
       (q.hint ? '<div class="q-hint">'+esc(q.hint)+'</div>' : '') + '</div>' +
       (canNote && q.type !== 'number' ? noteBtn : '') +
