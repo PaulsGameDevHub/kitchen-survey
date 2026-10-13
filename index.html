@@ -70,9 +70,9 @@ const CONFIG = {
           "when": { "q": "status", "in": ["Kitchen installed", "Part stripped"] },
           "questions": [
             { "id": "wtDepth", "label": "Worktop depth", "type": "choice",
-              "options": ["600mm", "650mm", "900mm", "Other"],
+              "options": ["600mm", "650mm", "Other"],
               "hint": "Deeper than 600mm can mean pipes hidden behind the units",
-              "flag": ["650mm", "900mm"], "flagNote": "deeper than standard, check for hidden pipes" },
+              "flag": ["650mm"], "flagNote": "deeper than standard, check for hidden pipes" },
             { "id": "wtDepthOther", "label": "Measured depth", "type": "number", "unit": "mm",
               "flagAbove": 600, "flagNote": "deeper than standard, check for hidden pipes",
               "when": { "q": "wtDepth", "in": ["Other"] } },
