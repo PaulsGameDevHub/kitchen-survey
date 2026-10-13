@@ -38,6 +38,10 @@
        "optional"   not counted towards progress
        "flagLabel"  wording to use on the follow-up list instead of the label
        "flagWhen"   only flag when another answer matches, same shape as "when"
+       "details"    each picked option gets make, model and power-needed boxes.
+                    Use "detailsSkip": ["None"] to leave some out, "detailNames"
+                    to name them ({ "Gas": "Gas hob" }) or "detailPrefix": "Old ".
+                    Power choices come from "powerOptions" at the top.
        "flagDetail" show another answer in place of a flagged option, e.g.
                     "flagDetail": { "Other": "wtDepthOther" } lists "Other" as
                     the measured depth, and that box goes red along with it
@@ -55,6 +59,7 @@ const CONFIG = {
   "brandline": "Site survey checklist",
   "tagline": "Part 1 measures up the room. Part 2 records what's going in. Anything that needs a second look goes on the follow-up list.",
   "autosave": true,
+  "powerOptions": ["13A", "16A", "20A", "32A", "40A+", "Unsure"],
   "parts": [
     {
       "id": "room",
@@ -335,6 +340,7 @@ const CONFIG = {
           "questions": [
             { "id": "hobType", "label": "Hob", "type": "choice",
               "options": ["Gas", "Induction", "Ceramic", "Range cooker"],
+              "details": true, "detailNames": { "Gas": "Gas hob", "Induction": "Induction hob", "Ceramic": "Ceramic hob" },
               "flag": ["Gas"], "flagWhen": { "q": "gasPresent", "in": ["No"] },
               "flagLabel": "Hob", "flagNote": "there is currently no gas in the room, a new supply is needed" },
             { "id": "rangeFuel", "label": "Range cooker fuel", "type": "choice",
@@ -352,21 +358,27 @@ const CONFIG = {
                         { "any": [ { "q": "hobType", "in": ["Induction", "Ceramic"] }, { "q": "rangeFuel", "in": ["Electric"] } ] } ] },
             { "id": "oven", "label": "Oven", "type": "choice",
               "options": ["Single", "Double", "Built under", "None"],
+              "details": true, "detailsSkip": ["None"],
+              "detailNames": { "Single": "Single oven", "Double": "Double oven", "Built under": "Built-under oven" },
               "when": { "q": "hobType", "in": ["Gas", "Induction", "Ceramic"] } },
             { "id": "ovenHousing", "label": "Oven position", "type": "choice",
               "options": ["Under worktop", "Tall housing"],
               "when": { "q": "oven", "in": ["Single", "Double"] } },
             { "id": "extract", "label": "Extraction", "type": "choice",
-              "options": ["Ducted out", "Recirculating", "Hob extractor", "None"] },
+              "options": ["Ducted out", "Recirculating", "Hob extractor", "None"],
+              "details": true, "detailsSkip": ["None"],
+              "detailNames": { "Ducted out": "Cooker hood", "Recirculating": "Cooker hood" } },
             { "id": "ductRoute", "label": "Duct route to outside", "type": "text",
               "hint": "Core drill needed? Distance and number of bends",
               "when": { "q": "extract", "in": ["Ducted out", "Hob extractor"] } },
             { "id": "integrated", "label": "Integrated appliances", "type": "checks",
-              "options": ["Fridge freezer", "Dishwasher", "Washing machine", "Microwave", "Wine cooler"] },
+              "options": ["Fridge freezer", "Dishwasher", "Washing machine", "Microwave", "Wine cooler"],
+              "details": true },
             { "id": "appFeeds", "label": "Water needed for", "type": "checks",
               "options": ["Dishwasher", "Washing machine", "Fridge water", "Boiling tap", "Water softener"] },
             { "id": "reusing", "label": "Old appliances being reused", "type": "checks",
-              "options": ["Oven", "Hob", "Hood", "Fridge freezer", "Dishwasher", "Washing machine"] }
+              "options": ["Oven", "Hob", "Hood", "Fridge freezer", "Dishwasher", "Washing machine"],
+              "details": true, "detailPrefix": "Old " }
           ]
         },
         {
@@ -652,6 +664,8 @@ const CONFIG = {
     padding:8px 10px;font-family:var(--font-body);font-size:16px;background:#fff;color:var(--ink);
   }
   .q .num input{flex:1 1 auto;min-width:0;max-width:150px;font-family:var(--font-mono);}
+  .q .num input.wide{max-width:none;font-family:var(--font-body);}
+  .num-grid.wide{grid-template-columns:repeat(auto-fill,minmax(200px,1fr));}
   .q textarea,.field textarea{resize:vertical;min-height:58px;}
   .q input:focus,.q textarea:focus,.field input:focus,.field textarea:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:var(--accent);}
 
@@ -866,6 +880,28 @@ const CONFIG = {
   const svgPen = '<svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16zM14 6l4 4"/></svg>';
   const noteLabel = has => svgPen + '<span class="lbl">' + (has ? 'Note ✓' : 'Add note') + '</span>';
 
+  // Appliance details: every option of a "details" question gets its own
+  // make / model / power boxes, shown only while that option is picked.
+  CONFIG.parts.forEach(p => p.sections.forEach(s => {
+    const out = [];
+    s.questions.forEach(q => {
+      out.push(q);
+      if (!q.details) return;
+      (q.options || []).filter(o => !(q.detailsSkip || []).includes(o)).forEach(o => {
+        let name = (q.detailNames || {})[o] || (q.type === 'checks' ? o : q.label + ' (' + o + ')');
+        if (q.detailPrefix) name = q.detailPrefix + name.charAt(0).toLowerCase() + name.slice(1);
+        const base = q.id + '-' + o.replace(/[^a-z0-9]/gi, '').toLowerCase();
+        const when = { q:q.id, in:[o] };
+        out.push(
+          { id:base + '-make',  label:name + ' make',  type:'text', half:true, optional:true, when },
+          { id:base + '-model', label:name + ' model', type:'text', half:true, optional:true, when },
+          { id:base + '-power', label:name + ' power needed', type:'choice', options:CONFIG.powerOptions, when }
+        );
+      });
+    });
+    s.questions = out;
+  }));
+
   // Flat lookups over the config
   const Q = {}, SEC = {}, PART = {}, ALLSEC = [];
   CONFIG.parts.forEach(p => {
@@ -971,6 +1007,7 @@ const CONFIG = {
         (q.unit ? '<span class="unit">'+esc(q.unit)+'</span>' : '') + noteBtn + '</div>';
     }
     if (q.type === 'note') return '<textarea data-k="'+k+'">'+esc(v)+'</textarea>';
+    if (q.half) return '<div class="num"><input type="text" class="wide" data-k="'+k+'" value="'+esc(v)+'">' + noteBtn + '</div>';
     return '<input type="text" data-k="'+k+'" value="'+esc(v)+'">';
   }
 
@@ -983,7 +1020,7 @@ const CONFIG = {
     return '<div class="q'+(sub ? ' sub' : '')+'" id="q-'+k+'">' +
       '<div class="q-head"><div><div class="q-label">'+esc(q.label)+'</div>' +
       (q.hint ? '<div class="q-hint">'+esc(q.hint)+'</div>' : '') + '</div>' +
-      (canNote && q.type !== 'number' ? noteBtn : '') +
+      (canNote && q.type !== 'number' && !q.half ? noteBtn : '') +
       '</div>' + renderControl(q, k, noteBtn) +
       (canNote ? '<div class="q-note'+(note ? ' open' : '')+'"><textarea data-notefor="'+k+'" placeholder="Note">'+esc(note)+'</textarea></div>' : '') +
       '</div>';
@@ -993,11 +1030,11 @@ const CONFIG = {
   function renderQuestions(s, i){
     let html = '', run = [];
     const flush = () => {
-      if (run.length) html += '<div class="num-grid">' + run.join('') + '</div>';
+      if (run.length) html += '<div class="num-grid' + (run.some(h => h.includes('class="wide"')) ? ' wide' : '') + '">' + run.join('') + '</div>';
       run = [];
     };
     s.questions.forEach(q => {
-      if (q.type === 'number') run.push(renderQ(q, i));
+      if (q.type === 'number' || q.half) run.push(renderQ(q, i));
       else { flush(); html += renderQ(q, i); }
     });
     flush();
