@@ -147,7 +147,9 @@ const CONFIG = {
           "photos": true,
           "questions": [
             { "id": "sinkPos", "label": "Sink position", "type": "choice",
-              "options": ["Staying", "Moving"] },
+              "options": ["Staying", "Moving"],
+              "flag": ["Moving"], "flagLabel": "Sink", "flagNote": "waste and water feeds need rerouting",
+              "flagDetail": { "Moving": "sinkMoveDist" } },
             { "id": "sinkMoveDist", "label": "How far is it moving?", "type": "number", "unit": "mm",
               "when": { "q": "sinkPos", "in": ["Moving"] } },
             { "id": "sinkMoveNote", "label": "Where is it moving to?", "type": "note",
