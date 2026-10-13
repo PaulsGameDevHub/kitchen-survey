@@ -340,7 +340,7 @@ const CONFIG = {
           "questions": [
             { "id": "hobType", "label": "Hob", "type": "choice",
               "options": ["Gas", "Induction", "Ceramic", "Range cooker"],
-              "details": true, "detailNames": { "Gas": "Gas hob", "Induction": "Induction hob", "Ceramic": "Ceramic hob" },
+              "details": true, "detailNames": { "Gas": "Gas hob", "Induction": "Induction hob", "Ceramic": "Ceramic hob", "Range cooker": "Range cooker" },
               "flag": ["Gas"], "flagWhen": { "q": "gasPresent", "in": ["No"] },
               "flagLabel": "Hob", "flagNote": "there is currently no gas in the room, a new supply is needed" },
             { "id": "rangeFuel", "label": "Range cooker fuel", "type": "choice",
@@ -895,7 +895,8 @@ const CONFIG = {
         out.push(
           { id:base + '-make',  label:name + ' make',  type:'text', half:true, optional:true, when },
           { id:base + '-model', label:name + ' model', type:'text', half:true, optional:true, when },
-          { id:base + '-power', label:name + ' power needed', type:'choice', options:CONFIG.powerOptions, when }
+          { id:base + '-power', label:name + ' power needed', type:'choice', options:CONFIG.powerOptions, when,
+            power:true, flagLabel:name + ' needs' }
         );
       });
     });
@@ -959,9 +960,35 @@ const CONFIG = {
   function secVisible(s){ return condMet(s.when, s, 0); }
   function visible(q, i){ const s = SEC[q.section]; return secVisible(s) && condMet(q.when, s, i); }
 
+  // ---------- Power checks ----------
+  // Every appliance's "power needed" answer is checked against the cooker
+  // circuit from Part 1, and against each other.
+  const amps = v => parseInt(v, 10);
+  function powerLoads(){
+    return Object.values(Q).filter(q => q.power && visible(q, 0) && amps(state.answers[q.id]) > 0)
+      .map(q => ({ q, a:amps(state.answers[q.id]), name:q.flagLabel.replace(/ needs$/, '') }));
+  }
+  function powerReasons(q){
+    const a = amps(state.answers[q.id]);
+    if (!(a > 0)) return [];
+    const out = [];
+    const cct = state.answers.cookerCct, rating = amps(state.answers.cookerRating);
+    if (a >= 32 && cct !== 'Yes')
+      out.push(cct === 'No' ? 'no dedicated cooker circuit in the room' : 'cooker circuit not confirmed');
+    if (cct === 'Yes' && rating > 0 && a > rating)
+      out.push('more than the existing ' + rating + 'A cooker circuit');
+    if (a > 13){
+      const others = powerLoads().filter(l => l.q !== q && l.a > 13);
+      if (others.length) out.push('along with ' + others.map(l => l.name.charAt(0).toLowerCase() + l.name.slice(1) + ' ' + l.a + 'A').join(', ') +
+        ', more than one appliance over 13A, may need a new supply');
+    }
+    return out;
+  }
+
   function flaggedVals(q, i){
     const v = state.answers[key(q, i)];
     if (!isSet(v)) return [];
+    if (q.power) return powerReasons(q).length ? [v] : [];
     if (q.flagAbove != null) return +v > q.flagAbove ? [fmtAnswer(q, v)] : [];
     if (!q.flag) return [];
     if (q.flagWhen && !condMet(q.flagWhen, SEC[q.section], i)) return [];
@@ -974,6 +1001,7 @@ const CONFIG = {
 
   // flagNote is one reason for the question, or one per answer: { "Not sorted": "…" }
   function flagNoteFor(q, vals){
+    if (q.power) return powerReasons(q).join('; ');
     if (!q.flagNote) return '';
     if (typeof q.flagNote === 'string') return q.flagNote;
     return vals.map(v => q.flagNote[Object.keys(q.flagNote).find(k => v.startsWith(k))]).filter(Boolean).join('; ');
@@ -1144,7 +1172,7 @@ const CONFIG = {
               const val = opts(q)[x];
               const on = arr.includes(val);
               b.classList.toggle('on', on);
-              b.classList.toggle('warn', on && !!q.flag && q.flag.includes(val));
+              b.classList.toggle('warn', on && (q.power ? fv.length > 0 : !!q.flag && q.flag.includes(val)));
             });
           }
         });
