@@ -29,7 +29,8 @@
                or hide it after one: "when": { "q": "keepFloor", "notIn": ["Yes"] }
        "flag"  answers that go on the follow-up list, e.g. "flag": ["No"]
        "flagAbove"  for numbers: flag anything bigger, e.g. "flagAbove": 600
-       "flagNote"   a reason added to the follow-up list when it's flagged
+       "flagNote"   a reason added to the follow-up list when it's flagged, or one
+                    per answer: { "Not sorted": "agree where it goes" }
        "selects"    typing in this box picks an option on another question, e.g.
                     "selects": { "q": "wtDepth", "value": "Other" }. Picking a
                     different option there clears the box again.
@@ -259,7 +260,10 @@ const CONFIG = {
             { "id": "parking", "label": "Parking", "type": "choice",
               "options": ["Drive", "Street", "Permit needed"], "flag": ["Permit needed"] },
             { "id": "storage", "label": "Where is the new kitchen stored on delivery?", "type": "choice",
-              "options": ["Garage", "Spare room", "In the kitchen", "Not sorted"], "flag": ["Not sorted"] },
+              "options": ["Garage", "Spare room", "In the kitchen", "Not sorted"],
+              "flag": ["In the kitchen", "Not sorted"], "flagLabel": "Kitchen storage",
+              "flagNote": { "In the kitchen": "may get in the way of the strip-out and fit",
+                            "Not sorted": "agree where it goes before delivery" } },
             { "id": "storageNote", "label": "Storage details", "type": "text",
               "hint": "Dry? Lockable? Room for the longest worktop?" },
             { "id": "skipSpot", "label": "Skip location", "type": "choice",
@@ -933,6 +937,13 @@ const CONFIG = {
     });
   }
 
+  // flagNote is one reason for the question, or one per answer: { "Not sorted": "…" }
+  function flagNoteFor(q, vals){
+    if (!q.flagNote) return '';
+    if (typeof q.flagNote === 'string') return q.flagNote;
+    return vals.map(v => q.flagNote[Object.keys(q.flagNote).find(k => v.startsWith(k))]).filter(Boolean).join('; ');
+  }
+
   function fmtAnswer(q, v){
     if (!isSet(v)) return '';
     if (Array.isArray(v)) return v.join(', ');
@@ -1146,7 +1157,7 @@ const CONFIG = {
     $('flagsHead').textContent = 'Follow up' + (flags.length ? ' (' + flags.length + ')' : '');
     $('flagList').innerHTML = flags.length
       ? flags.map(f => '<div class="flag-item" data-jump="'+key(f.q, f.i)+'" data-sec="'+f.s.id+'">' +
-          (f.s.repeat ? esc(instName(f.s, f.i)) + ': ' : '') + esc(f.q.flagLabel || f.q.label)+' <b>'+esc(f.vals.join(', '))+'</b>'+(f.q.flagNote ? ' · '+esc(f.q.flagNote) : '')+'</div>').join('')
+          (f.s.repeat ? esc(instName(f.s, f.i)) + ': ' : '') + esc(f.q.flagLabel || f.q.label)+' <b>'+esc(f.vals.join(', '))+'</b>'+(flagNoteFor(f.q, f.vals) ? ' · '+esc(flagNoteFor(f.q, f.vals)) : '')+'</div>').join('')
       : '<div class="flags-none">Nothing flagged yet.</div>';
 
     $('ref').textContent = new Date(state.started).toLocaleDateString('en-GB');
@@ -1368,7 +1379,7 @@ const CONFIG = {
     ALLSEC.forEach(s => { for (let i = 0; i < copies(s); i++) s.questions.forEach(q => {
       if (!visible(q, i)) return;
       const fv = flaggedVals(q, i);
-      if (fv.length) out.push((s.repeat ? instName(s, i) + ': ' : '') + (q.flagLabel || q.label) + ' — ' + fv.join(', ') + (q.flagNote ? ' (' + q.flagNote + ')' : ''));
+      if (fv.length) out.push((s.repeat ? instName(s, i) + ': ' : '') + (q.flagLabel || q.label) + ' — ' + fv.join(', ') + (flagNoteFor(q, fv) ? ' (' + flagNoteFor(q, fv) + ')' : ''));
     }); });
     return out;
   }
