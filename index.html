@@ -148,6 +148,11 @@ const CONFIG = {
           "questions": [
             { "id": "sinkPos", "label": "Sink position", "type": "choice",
               "options": ["Staying", "Moving"] },
+            { "id": "sinkMoveDist", "label": "How far is it moving?", "type": "number", "unit": "mm",
+              "when": { "q": "sinkPos", "in": ["Moving"] } },
+            { "id": "sinkMoveNote", "label": "Where is it moving to?", "type": "note",
+              "hint": "e.g. to the island, waste and feeds rerouted under the floor",
+              "when": { "q": "sinkPos", "in": ["Moving"] } },
             { "id": "wasteSeen", "label": "Can you see the waste pipe exit?", "type": "yesno",
               "flag": ["No"] },
             { "id": "wasteWhere", "label": "Where does the waste exit?", "type": "choice",
