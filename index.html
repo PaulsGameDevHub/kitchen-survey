@@ -104,8 +104,6 @@ const CONFIG = {
             { "id": "ceilingDropNote", "label": "What is it and where?", "type": "text",
               "hint": "e.g. slopes down over the back wall to about 2100mm",
               "when": { "q": "ceilingDrop", "in": ["Yes"] } },
-            { "id": "walls", "label": "Are the walls square and plumb?", "type": "choice",
-              "options": ["Good", "Slightly out", "Badly out"], "flag": ["Badly out"] },
             { "id": "floorType", "label": "Floor construction", "type": "choice",
               "options": ["Concrete", "Suspended timber", "Unsure"] },
             { "id": "floorFinish", "label": "Current floor finish", "type": "choice",
@@ -244,6 +242,15 @@ const CONFIG = {
             { "id": "skipSpot", "label": "Skip location", "type": "choice",
               "options": ["Drive", "Road (permit)", "Not needed"],
               "when": { "q": "disposal", "in": ["Skip"] } }
+          ]
+        },
+        {
+          "id": "roomNotes",
+          "title": "Room notes",
+          "photos": true,
+          "questions": [
+            { "id": "roomStandout", "label": "Anything that stands out", "type": "note",
+              "hint": "e.g. walls badly out of square, damp, cracks, uneven floor" }
           ]
         }
       ]
