@@ -27,6 +27,8 @@
        "when"  only show it after another answer, e.g.
                "when": { "q": "wasteSeen", "in": ["Yes"] }
        "flag"  answers that go on the follow-up list, e.g. "flag": ["No"]
+       "flagAbove"  for numbers: flag anything bigger, e.g. "flagAbove": 600
+       "flagNote"   a reason added to the follow-up list when it's flagged
 
      Optional on a section:
        "when"    hide the whole section until an answer matches
@@ -67,18 +69,13 @@ const CONFIG = {
           "photos": true,
           "when": { "q": "status", "in": ["Kitchen installed", "Part stripped"] },
           "questions": [
-            { "id": "wtDepth", "label": "Worktop depth", "type": "number", "unit": "mm", "hint": "Standard is 600mm" },
-            { "id": "wtHeight", "label": "Worktop height", "type": "number", "unit": "mm" },
-            { "id": "plinth", "label": "Plinth height", "type": "number", "unit": "mm" },
-            { "id": "wtThick", "label": "Worktop thickness", "type": "choice",
-              "options": ["22mm", "28mm", "38mm", "40mm+"] },
-            { "id": "wtMat", "label": "Current worktop", "type": "choice",
-              "options": ["Laminate", "Solid wood", "Stone / quartz", "Other"] },
-            { "id": "wallUnits", "label": "Wall units fitted?", "type": "yesno" },
-            { "id": "wallUnitH", "label": "Floor to underside of wall units", "type": "number", "unit": "mm",
-              "when": { "q": "wallUnits", "in": ["Yes"] } },
-            { "id": "tiles", "label": "Tiled splashback coming off?", "type": "yesno",
-              "hint": "Expect plaster damage behind tiles" }
+            { "id": "wtDepth", "label": "Worktop depth", "type": "number", "unit": "mm",
+              "hint": "Deeper than 600mm can mean pipes hidden behind the units",
+              "flagAbove": 600, "flagNote": "deeper than standard, check for hidden pipes" },
+            { "id": "wtMat", "label": "Worktop material", "type": "choice",
+              "options": ["Laminate", "Solid wood", "Quartz", "Granite", "Other stone", "Compact"],
+              "hint": "Stone is heavy to lift out, so the installer may need a hand",
+              "flag": ["Quartz", "Granite", "Other stone"], "flagNote": "heavy, installer may need help to lift out" }
           ]
         },
         {
@@ -590,6 +587,7 @@ const CONFIG = {
   .chips[data-single] .chip.on{background:var(--accent);color:#fff;}
   .chip.on.warn{background:var(--warn-wash);border-color:var(--warn);color:var(--warn);}
   .chip.on.warn .tk{background:var(--warn);border-color:var(--warn);}
+  .chips[data-single] .chip.on.warn{background:var(--warn);color:#fff;}
 
   /* text and number boxes. Everything at 16px: iOS zooms the page on smaller inputs. */
   .num{display:flex;align-items:center;gap:8px;}
@@ -865,7 +863,9 @@ const CONFIG = {
 
   function flaggedVals(q, i){
     const v = state.answers[key(q, i)];
-    if (!q.flag || !isSet(v)) return [];
+    if (!isSet(v)) return [];
+    if (q.flagAbove != null) return +v > q.flagAbove ? [fmtAnswer(q, v)] : [];
+    if (!q.flag) return [];
     return (Array.isArray(v) ? v : [v]).filter(x => q.flag.includes(x));
   }
 
@@ -1073,7 +1073,7 @@ const CONFIG = {
     $('flagsHead').textContent = 'Follow up' + (flags.length ? ' (' + flags.length + ')' : '');
     $('flagList').innerHTML = flags.length
       ? flags.map(f => '<div class="flag-item" data-jump="'+key(f.q, f.i)+'" data-sec="'+f.s.id+'">' +
-          (f.s.repeat ? esc(instName(f.s, f.i)) + ': ' : '') + esc(f.q.label)+' <b>'+esc(f.vals.join(', '))+'</b></div>').join('')
+          (f.s.repeat ? esc(instName(f.s, f.i)) + ': ' : '') + esc(f.q.label)+' <b>'+esc(f.vals.join(', '))+'</b>'+(f.q.flagNote ? ' · '+esc(f.q.flagNote) : '')+'</div>').join('')
       : '<div class="flags-none">Nothing flagged yet.</div>';
 
     $('ref').textContent = new Date(state.started).toLocaleDateString('en-GB');
@@ -1280,7 +1280,7 @@ const CONFIG = {
     ALLSEC.forEach(s => { for (let i = 0; i < copies(s); i++) s.questions.forEach(q => {
       if (!visible(q, i)) return;
       const fv = flaggedVals(q, i);
-      if (fv.length) out.push((s.repeat ? instName(s, i) + ': ' : '') + q.label + ' — ' + fv.join(', '));
+      if (fv.length) out.push((s.repeat ? instName(s, i) + ': ' : '') + q.label + ' — ' + fv.join(', ') + (q.flagNote ? ' (' + q.flagNote + ')' : ''));
     }); });
     return out;
   }
