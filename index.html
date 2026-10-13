@@ -333,7 +333,9 @@ const CONFIG = {
           "photos": true,
           "questions": [
             { "id": "hobType", "label": "Hob", "type": "choice",
-              "options": ["Gas", "Induction", "Ceramic", "Range cooker"] },
+              "options": ["Gas", "Induction", "Ceramic", "Range cooker"],
+              "flag": ["Gas"], "flagWhen": { "q": "gasPresent", "in": ["No"] },
+              "flagLabel": "Hob", "flagNote": "there is currently no gas in the room, a new supply is needed" },
             { "id": "gasCap", "label": "Gas to be capped off?", "type": "yesno",
               "hint": "Gas Safe engineer needed", "flag": ["Yes"],
               "when": { "q": "hobType", "in": ["Induction", "Ceramic"] } },
